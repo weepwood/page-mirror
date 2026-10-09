@@ -10,6 +10,16 @@
       "previewPath": "sites/holo/",
       "readme": "sites/holo/README.md",
       "updatedAt": "2026-10-09"
+    },
+    {
+      "slug": "artcraft-apps",
+      "name": "ArtCraft — Crafting Apps",
+      "sourceUrl": "https://getartcraft.com/apps",
+      "description": "ArtCraft 七款开源 Crafting Apps 介绍页的独立镜像，按原站区块顺序还原页面结构与响应式布局。",
+      "status": "review",
+      "previewPath": "sites/artcraft-apps/",
+      "readme": "sites/artcraft-apps/README.md",
+      "updatedAt": "2026-10-09"
     }
   ]
 }

@@ -1,4 +1,15 @@
 {
   "schemaVersion": 1,
-  "sites": []
+  "sites": [
+    {
+      "slug": "holo",
+      "name": "Holo — AI Marketing",
+      "sourceUrl": "https://holo.ui8.dev/",
+      "description": "Holo 营销网站镜像；目前为首版结构实现，仍需逐屏对照原站。",
+      "status": "building",
+      "previewPath": "sites/holo/",
+      "readme": "sites/holo/README.md",
+      "updatedAt": "2026-10-09"
+    }
+  ]
 }

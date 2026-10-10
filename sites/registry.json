@@ -20,6 +20,16 @@
       "previewPath": "sites/artcraft-apps/",
       "readme": "sites/artcraft-apps/README.md",
       "updatedAt": "2026-10-09"
+    },
+    {
+      "slug": "inftab",
+      "name": "Infinity New Tab",
+      "sourceUrl": "https://inftab.com/",
+      "description": "Infinity 新标签页独立镜像初版；具备搜索、快捷入口和分页，仍需按原站截图逐屏验收。",
+      "status": "building",
+      "previewPath": "sites/inftab/",
+      "readme": "sites/inftab/README.md",
+      "updatedAt": "2026-10-10"
     }
   ]
 }

@@ -13,14 +13,14 @@
     body{overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#343b42;background:#d4d9dc;-webkit-font-smoothing:antialiased}
     button,input{font:inherit}
     button{cursor:pointer}
-    .wallpaper{position:fixed;inset:0;background:#81949a url("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=2400&q=88") center center/cover no-repeat;transform:scale(1.015)}
-    .wallpaper:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,20,26,.08),rgba(13,20,26,.18) 55%,rgba(13,20,26,.27))}
+    .wallpaper{position:fixed;inset:0;background:linear-gradient(132deg,#76bef4 0%,#a5a4e8 27%,#b247bc 51%,#ec2b92 72%,#fa397e 100%);transform:scale(1.015)}
+    .wallpaper:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 12% 20%,rgba(255,255,255,.13),transparent 40%),linear-gradient(135deg,rgba(68,56,184,.05),rgba(255,0,114,.08))}
     .page{position:relative;z-index:1;min-height:100%;height:100%;overflow:auto;display:flex;flex-direction:column;align-items:center}
     .topbar{position:absolute;top:22px;right:24px;display:flex;gap:9px;align-items:center}
     .icon-button{width:34px;height:34px;border:1px solid rgba(255,255,255,.48);border-radius:50%;background:rgba(255,255,255,.18);color:#fff;display:grid;place-items:center;backdrop-filter:blur(8px);transition:background .18s,transform .18s}
     .icon-button:hover{background:rgba(255,255,255,.35);transform:translateY(-1px)}
     .icon-button svg{width:17px;height:17px}
-    .workspace{width:min(780px,calc(100% - 32px));padding-top:17.5vh;display:flex;flex-direction:column;align-items:center;margin:0 auto}
+    .workspace{width:min(780px,calc(100% - 32px));padding-top:22vh;display:flex;flex-direction:column;align-items:center;margin:0 auto}
     .search-wrap{position:relative;width:min(480px,100%);z-index:4}
     .search-box{height:50px;display:flex;align-items:center;gap:12px;padding:0 16px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.8);border-radius:7px;box-shadow:0 5px 18px rgba(0,0,0,.12);transition:box-shadow .18s}
     .search-box:focus-within{box-shadow:0 7px 24px rgba(0,0,0,.2)}
@@ -37,7 +37,7 @@
     .engine:hover{background:rgba(20,30,40,.035)}
     .engine svg{width:27px;height:27px;max-width:100%}
     .engine.add-engine{font-size:26px;font-weight:300;color:#aeb3b7}
-    .shortcuts{width:min(590px,100%);margin-top:51px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));column-gap:30px;row-gap:31px;align-items:start;justify-items:center}
+    .shortcuts{width:min(620px,100%);margin-top:39px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:22px;row-gap:27px;align-items:start;justify-items:center}
     .shortcut{width:100%;display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0;position:relative}
     .tile{position:relative;width:68px;height:68px;max-width:100%;border:0;border-radius:50%;display:grid;place-items:center;box-shadow:var(--shadow);color:#fff;text-decoration:none;transition:transform .17s,box-shadow .17s;overflow:hidden}
     .tile:hover{transform:translateY(-3px) scale(1.035);box-shadow:0 9px 24px rgba(0,0,0,.25)}
@@ -70,8 +70,8 @@
     .btn{height:37px;padding:0 15px;border:1px solid #dfe3e5;border-radius:6px;background:#fff;color:#4b5257;font-size:13px}
     .btn.primary{border-color:#ff4b55;background:#ff4b55;color:white}
     .small-hint{font-size:11px;color:#93999d;line-height:1.5;margin-top:12px}
-    @media(max-width:720px){.workspace{padding-top:18vh}.shortcuts{width:min(440px,100%);column-gap:12px;row-gap:23px;margin-top:44px}.tile{width:58px;height:58px}.tile svg{width:31px;height:31px}.tile .letter{font-size:37px}.topbar{top:14px;right:14px}.engine-strip{grid-template-columns:repeat(7,minmax(0,1fr))}.bottom-note{max-width:calc(100% - 26px)}}
-    @media(max-width:390px){.workspace{width:calc(100% - 22px);padding-top:16vh}.search-box{height:47px}.shortcuts{column-gap:5px;row-gap:19px;margin-top:38px}.tile{width:49px;height:49px}.tile svg{width:27px;height:27px}.tile .letter{font-size:32px}.tile-name{font-size:10px}.page-nav{margin-top:20px}.bottom-note{font-size:9px}}
+    @media(max-width:720px){.workspace{padding-top:19vh}.shortcuts{width:min(520px,100%);grid-template-columns:repeat(6,minmax(0,1fr));column-gap:10px;row-gap:23px;margin-top:40px}.tile{width:58px;height:58px}.tile svg{width:31px;height:31px}.tile .letter{font-size:37px}.topbar{top:14px;right:14px}.engine-strip{grid-template-columns:repeat(7,minmax(0,1fr))}.bottom-note{max-width:calc(100% - 26px)}}
+    @media(max-width:390px){.workspace{width:calc(100% - 22px);padding-top:17vh}.search-box{height:47px}.shortcuts{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:8px;row-gap:19px;margin-top:34px}.tile{width:49px;height:49px}.tile svg{width:27px;height:27px}.tile .letter{font-size:32px}.tile-name{font-size:10px}.page-nav{margin-top:20px}.bottom-note{font-size:9px}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
   </style>
 </head>
@@ -125,16 +125,18 @@
         {id:"add",name:"Add website",url:"",icon:"plus"}
       ];
       var defaults = [
-        {name:"Infinity",url:"https://inftab.com/",type:"infinity",color:"#ff4b55"},
-        {name:"Weather",url:"https://weather.com/",type:"weather",color:"#23a9ed"},
-        {name:"Apps",url:"https://play.google.com/store",type:"apps",color:"#fff",ink:"#8a4af3"},
-        {name:"History",url:"https://myactivity.google.com/",type:"clock",color:"#fff",ink:"#19c5b5"},
-        {name:"Favorites",url:"https://www.google.com/",type:"star",color:"#fff",ink:"#ffb900"},
-        {name:"Steam",url:"https://store.steampowered.com/",type:"steam",color:"#b7b9ba"},
-        {name:"Google Play",url:"https://play.google.com/store",type:"play",color:"#fff"},
+        {name:"Twitter",url:"https://twitter.com/",type:"twitter",color:"#18b9e8"},
+        {name:"TikTok",url:"https://www.tiktok.com/",type:"tiktok",color:"#111"},
+        {name:"NetEase Music",url:"https://music.163.com/",type:"netease",color:"#e93835"},
+        {name:"Gmail",url:"https://mail.google.com/",type:"gmail",color:"#fff"},
         {name:"Facebook",url:"https://www.facebook.com/",type:"facebook",color:"#31569a"},
-        {name:"Amazon",url:"https://www.amazon.com/",type:"amazon",color:"#ff9200"},
-        {name:"Twitter",url:"https://twitter.com/",type:"twitter",color:"#18b9e8"}
+        {name:"YouTube",url:"https://www.youtube.com/",type:"youtube",color:"#fff"},
+        {name:"Group",url:"https://inftab.com/",type:"group",color:"#fff",ink:"#4f82ea"},
+        {name:"Notes",url:"https://keep.google.com/",type:"notes",color:"#ffad36"},
+        {name:"To-do",url:"https://tasks.google.com/",type:"todo",color:"#20c985"},
+        {name:"History",url:"https://myactivity.google.com/",type:"clock",color:"#fff",ink:"#19c5b5"},
+        {name:"Settings",url:"https://inftab.com/",type:"settings",color:"#555a66"},
+        {name:"Chrome",url:"https://chromewebstore.google.com/",type:"chrome",color:"#fff"}
       ];
       var extraPages = [
         [
@@ -180,6 +182,13 @@
         sogou:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="#f45c42"/><path d="M13 19c1-5 7-7 12-4l-3 5c-2-1-4-1-5 1-1 2 2 3 5 3 6 0 10 4 8 9-2 6-11 7-17 2l4-5c3 2 6 3 8 1 1-2-2-3-5-3-5 0-9-3-7-9Z" fill="#fff"/></svg>',
         "360":'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="none" stroke="#1db86a" stroke-width="6"/><path d="M24 6a18 18 0 0 1 18 18H24Z" fill="#ffc72c"/><circle cx="24" cy="24" r="7" fill="#fff"/></svg>',
         plus:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 9v30M9 24h30" fill="none" stroke="#aab0b4" stroke-width="4" stroke-linecap="square"/></svg>',
+        tiktok:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M28 6v24a9 9 0 1 1-8-9v7a3 3 0 1 0 2 3V6h6c1 6 4 9 10 10v7c-4-.3-7-2-10-5Z" fill="#25f4ee" transform="translate(-2 1)"/><path d="M28 6v24a9 9 0 1 1-8-9v7a3 3 0 1 0 2 3V6h6c1 6 4 9 10 10v7c-4-.3-7-2-10-5Z" fill="#fe2c55" transform="translate(2 -1)"/><path d="M28 6v24a9 9 0 1 1-8-9v7a3 3 0 1 0 2 3V6h6c1 6 4 9 10 10v7c-4-.3-7-2-10-5Z" fill="#fff"/></svg>',
+        netease:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="#fff"/><path d="M13 33V15l22 18V15" fill="none" stroke="#e93835" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="24" r="3" fill="#e93835"/></svg>',
+        group:'<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="4" width="18" height="18" rx="5" fill="#4285f4"/><rect x="26" y="4" width="18" height="18" rx="5" fill="#34a853"/><rect x="4" y="26" width="18" height="18" rx="5" fill="#fbbc05"/><rect x="26" y="26" width="18" height="18" rx="5" fill="#ea4335"/><circle cx="13" cy="13" r="3" fill="#fff"/><circle cx="35" cy="13" r="3" fill="#fff"/><circle cx="13" cy="35" r="3" fill="#fff"/><circle cx="35" cy="35" r="3" fill="#fff"/></svg>',
+        notes:'<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="4" width="34" height="40" rx="5" fill="#fff"/><path d="M15 15h18M15 23h18M15 31h12" stroke="#f0a027" stroke-width="3" stroke-linecap="round"/></svg>',
+        todo:'<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="5" width="38" height="38" rx="6" fill="#fff"/><path d="m12 16 3 3 5-6m2 4h13M12 28l3 3 5-6m2 4h13" fill="none" stroke="#20c985" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        settings:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m20 4-2 5-5 2-5-2-4 6 4 4v6l-4 4 4 6 5-2 5 2 2 5h8l2-5 5-2 5 2 4-6-4-4v-6l4-4-4-6-5 2-5-2-2-5Z" fill="#ddd"/><circle cx="24" cy="22" r="8" fill="#5c6470"/><circle cx="24" cy="22" r="3" fill="#ddd"/></svg>',
+        chrome:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="#fbbc05"/><path d="M24 24 13 43A21 21 0 0 1 5 14Z" fill="#34a853"/><path d="M24 24 5 14A21 21 0 0 1 44 19H25Z" fill="#ea4335"/><circle cx="24" cy="24" r="10" fill="#4285f4" stroke="#fff" stroke-width="2"/></svg>',
         youtube:'<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="10" width="40" height="28" rx="8" fill="#ff0033"/><path d="m20 17 12 7-12 7Z" fill="#fff"/></svg>',
         gmail:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 37V13l17 13 17-13v24" fill="none" stroke="#ea4335" stroke-width="5" stroke-linejoin="round"/><path d="M7 15v22" stroke="#4285f4" stroke-width="5"/><path d="M41 15v22" stroke="#34a853" stroke-width="5"/></svg>',
         wikipedia:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#fff" stroke="#333" stroke-width="1.5"/><text x="24" y="34" font-family="Georgia" text-anchor="middle" font-size="31" fill="#222">W</text></svg>',

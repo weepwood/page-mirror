@@ -25,7 +25,7 @@
       "slug": "inftab",
       "name": "Infinity New Tab",
       "sourceUrl": "https://inftab.com/",
-      "description": "Infinity 新标签页独立镜像初版；具备搜索、快捷入口和分页，仍需按原站截图逐屏验收。",
+      "description": "按 Infinity 官方展示图重新校准搜索框、六个搜索引擎入口、两排快捷图标与分页；仍需对照当前运行页面验收。",
       "status": "building",
       "previewPath": "sites/inftab/",
       "readme": "sites/inftab/README.md",

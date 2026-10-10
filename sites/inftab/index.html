@@ -209,7 +209,7 @@
         ebay:'<svg viewBox="0 0 48 48" aria-hidden="true"><text x="24" y="29" text-anchor="middle" font-size="21" font-family="Arial" font-weight="700"><tspan fill="#e53238">e</tspan><tspan fill="#0064d2">b</tspan><tspan fill="#f5af02">a</tspan><tspan fill="#86b817">y</tspan></text></svg>',
         booking:'<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="5" width="32" height="38" rx="3" fill="none" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" font-size="24" font-family="Arial" font-weight="700" fill="#fff">B.</text></svg>'
       };
-      var currentEngine = "google";
+      var currentEngine = "bing";
       var currentPage = 0;
       var customPages = [];
       var saved = null;
@@ -241,7 +241,7 @@
       function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
       function renderShortcuts(){
         shortcutsEl.innerHTML="";
-        currentItems().slice(0,10).forEach(function(item,index){
+        currentItems().slice(0,12).forEach(function(item,index){
           var wrap=document.createElement("div");wrap.className="shortcut";
           var a=document.createElement("a");a.className="tile";a.href=safeUrl(item.url)||"#";a.setAttribute("aria-label",item.name);a.title=item.name;
           a.style.background=item.color||"#fff";
@@ -309,7 +309,7 @@
         if(editIndex!==""){
           var p=Number(form.dataset.editPage);var old=saved[p][Number(editIndex)];item.type=old.type;item.color=old.color;item.ink=old.ink;saved[p][Number(editIndex)]=item;currentPage=p;
         }else{
-          if(saved[currentPage].length>=10){showStatus("This page is full. Remove a tile or switch pages.");return;}
+          if(saved[currentPage].length>=12){showStatus("This page is full. Remove a tile or switch pages.");return;}
           saved[currentPage].push(item);
         }
         persist();renderShortcuts();closeModal();showStatus("Shortcut saved.");

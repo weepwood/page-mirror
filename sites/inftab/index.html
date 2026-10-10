@@ -7,7 +7,7 @@
   <meta name="description" content="Infinity New Tab — search, shortcuts, and pages.">
   <title>Infinity New Tab</title>
   <style>
-    :root{color-scheme:light;--tile-size:min(7.5vw,13.4vh,150px);--ink:#303941}
+    :root{color-scheme:light;--tile-size:min(13.4vh,150px);--ink:#303941}
     *{box-sizing:border-box}
     html,body{width:100%;height:100%;margin:0}
     body{overflow:hidden;background:#27383f;color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
@@ -17,13 +17,13 @@
        Cropping its browser frame leaves the actual New Tab canvas and original art. */
     .reference-canvas{position:absolute;inset:0;background-image:url("https://en.inftab.com/index/img/img_search.jpg?v=4a26fa7");background-repeat:no-repeat;background-position:center -12.84vh;background-size:auto 116.73vh}
     .interactive-layer{position:absolute;inset:0}
-    .search-form{position:absolute;left:24.47%;top:19.26vh;width:51.06%;height:9.34vh;min-height:42px;max-height:102px;display:flex;align-items:center;gap:clamp(8px,1.3vw,24px);padding:0 clamp(10px,1.55vw,30px);border:0;border-radius:clamp(5px,.7vw,12px);background:#fff;box-shadow:none}
+    .search-form{position:absolute;left:calc(50% - 46.7vh);top:19.26vh;width:93.4vh;height:9.34vh;min-height:42px;max-height:102px;display:flex;align-items:center;gap:clamp(8px,2.5vh,26px);padding:0 clamp(10px,2.9vh,31px);border:0;border-radius:clamp(5px,1.37vh,15px);background:#fff;box-shadow:none}
     .search-logo{width:clamp(16px,3.3vh,36px);height:clamp(16px,3.3vh,36px);flex:none}
     .search-input{width:100%;height:100%;min-width:0;outline:0;border:0;background:transparent;color:#373b40;font-size:clamp(14px,1.65vh,18px);font-weight:400;padding:0}
     .search-input{font-size:clamp(14px,3.1vh,34px)}
     .search-input::placeholder{color:#e4e4e4;opacity:1}
     .search-form:focus-within{box-shadow:0 1px 5px rgba(0,0,0,.08)}
-    .engine-strip{position:absolute;left:24.47%;top:29.8vh;width:51.06%;height:14.2vh;min-height:64px;max-height:154px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:stretch;overflow:hidden;border-radius:4px;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.09)}
+    .engine-strip{position:absolute;left:calc(50% - 46.7vh);top:29.8vh;width:93.4vh;height:14.2vh;min-height:64px;max-height:154px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:stretch;overflow:hidden;border-radius:4px;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.09)}
     .engine-button{appearance:none;display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:100%;border:0;border-right:1px solid #f0f0f0;background:#fff;padding:0;cursor:pointer}
     .engine-button:last-child{border-right:0}
     .engine-button svg{display:block;width:min(3vw,4.5vh,48px);height:min(3vw,4.5vh,48px);max-width:82%;max-height:62%;overflow:visible}
@@ -213,7 +213,7 @@
         items.slice(0,10).forEach(function(item,index){
           var a=document.createElement("a");a.className="shortcut";a.href=safeUrl(item.url)||"#";a.target="_blank";a.rel="noopener noreferrer";a.title=item.name;a.setAttribute("aria-label",item.name);a.style.setProperty("--bg",item.bg);
           var col=index%5,row=Math.floor(index/5);
-          a.style.setProperty("--x",["22.65%","36.18%","49.89%","63.40%","77.13%"][col]);
+          a.style.setProperty("--x",["calc(50% - 50vh)","calc(50% - 25.3vh)","calc(50% - 0.2vh)","calc(50% + 24.5vh)","calc(50% + 49.6vh)"][col]);
           a.style.setProperty("--y",row===0?"46.89vh":"67.12vh");
           a.innerHTML=icon[item.icon]||'<span aria-hidden="true">'+escapeAttr(item.name.charAt(0))+'</span>';
           shortcutContainer.appendChild(a);

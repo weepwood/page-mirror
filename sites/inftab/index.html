@@ -23,9 +23,12 @@
     .search-input{font-size:clamp(14px,3.1vh,34px)}
     .search-input::placeholder{color:#e4e4e4;opacity:1}
     .search-form:focus-within{box-shadow:0 1px 5px rgba(0,0,0,.08)}
-    .engine-hotspots{position:absolute;left:24.47%;top:29.8vh;width:51.06%;height:14.2vh;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:center}
-    .engine-hotspot{appearance:none;justify-self:center;align-self:center;width:100%;height:100%;border:0;border-radius:0;background:transparent;color:transparent;cursor:pointer;padding:0;position:relative}
-    .engine-hotspot:focus-visible{outline:3px solid rgba(255,255,255,.95);outline-offset:-5px;border-radius:7px}
+    .engine-strip{position:absolute;left:24.47%;top:29.8vh;width:51.06%;height:14.2vh;min-height:64px;max-height:154px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:stretch;overflow:hidden;border-radius:4px;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.09)}
+    .engine-button{appearance:none;display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:100%;border:0;border-right:1px solid #f0f0f0;background:#fff;padding:0;cursor:pointer}
+    .engine-button:last-child{border-right:0}
+    .engine-button svg{display:block;width:min(3vw,4.5vh,48px);height:min(3vw,4.5vh,48px);max-width:82%;max-height:62%;overflow:visible}
+    .engine-button:last-child svg{width:min(3.6vw,5vh,52px);height:min(3.6vw,5vh,52px)}
+    .engine-button:focus-visible{outline:3px solid #8ebce6;outline-offset:-5px;border-radius:7px;z-index:1}
     .shortcut-grid{position:absolute;inset:0;pointer-events:none}
     .shortcut{position:absolute;left:var(--x);top:var(--y);width:var(--tile-size);aspect-ratio:1;transform:translate(-50%,-50%);display:grid;place-items:center;border:0;border-radius:50%;background:var(--bg,#fff);box-shadow:0 2px 4px rgba(0,0,0,.08);padding:0;pointer-events:auto;cursor:pointer;transition:transform .15s,box-shadow .15s}
     .shortcut:hover{transform:translate(-50%,-50%) scale(1.055);box-shadow:0 5px 15px rgba(0,0,0,.2)}
@@ -60,7 +63,7 @@
       .search-logo{width:23px;height:23px}
       .search-input{font-size:15px}
       .search-input{font-size:15px}
-      .engine-hotspots{left:5%;top:25vh;width:90%;height:48px}
+      .engine-strip{left:5%;top:25vh;width:90%;height:48px;min-height:48px;max-height:48px;border-radius:4px}
       .shortcut-grid{position:absolute;inset:31vh 7% auto;height:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:12px;row-gap:20px;justify-items:center;pointer-events:none}
       .shortcut{position:relative;left:auto;top:auto;transform:none;width:min(58px,15vw);pointer-events:auto}
       .shortcut:hover{transform:scale(1.04)}
@@ -80,7 +83,7 @@
         <svg class="search-logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="13.5" cy="13.5" r="9.2" fill="none" stroke="#ff4b55" stroke-width="5"/><path d="M20.2 20.1 25.9 25.8" stroke="#ff4b55" stroke-width="4.5" stroke-linecap="round"/><circle cx="25.3" cy="25.3" r="3.3" fill="#ffd83d"/></svg>
         <input id="search-input" class="search-input" type="search" autocomplete="off" spellcheck="false" aria-label="Enter and Search" placeholder="Enter and Search">
       </form>
-      <div id="engine-hotspots" class="engine-hotspots" aria-label="Search engines"></div>
+      <div id="engine-strip" class="engine-strip" aria-label="Search engines"></div>
       <div id="shortcut-grid" class="shortcut-grid" aria-label="Website shortcuts"></div>
       <nav id="pager" class="pager" aria-label="Shortcut pages"></nav>
     </div>
@@ -178,23 +181,29 @@
       ];
       var currentPage=0;
       var currentEngine="infinity";
+      try{currentEngine=localStorage.getItem("inftab-mirror-current-engine")||"infinity";}catch(e){}
       var customEngines=[];
       try{var stored=JSON.parse(localStorage.getItem("inftab-mirror-engines-v1")||"[]");if(Array.isArray(stored))customEngines=stored.filter(function(x){return x&&x.id&&x.name&&x.url;});}catch(e){}
-      var engineContainer=document.getElementById("engine-hotspots");
+      var engineContainer=document.getElementById("engine-strip");
       var shortcutContainer=document.getElementById("shortcut-grid");
       var pager=document.getElementById("pager");
       var searchInput=document.getElementById("search-input");
       var shade=document.getElementById("modal-shade");
       var toast=document.getElementById("toast");
       function allEngines(){return engines.slice(0,6).concat(customEngines).concat([engines[6]]);}
+      function visibleEngines(){
+        var activeCustom=customEngines.find(function(x){return x.id===currentEngine;});
+        return (activeCustom?[activeCustom].concat(engines.slice(1,6)):engines.slice(0,6)).concat([engines[6]]);
+      }
       function safeUrl(url){try{var u=new URL(url);return (u.protocol==="http:"||u.protocol==="https:")?u.href:null;}catch(e){return null;}}
       function notify(message){toast.textContent=message;toast.classList.add("visible");window.clearTimeout(notify.timer);notify.timer=window.setTimeout(function(){toast.classList.remove("visible");},2200);}
       function escapeAttr(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
       function renderEngines(){
         engineContainer.innerHTML="";
-        allEngines().forEach(function(engine,i){
-          var b=document.createElement("button");b.type="button";b.className="engine-hotspot";b.title=engine.name;b.setAttribute("aria-label","Use "+engine.name+" for search");
-          b.addEventListener("click",function(){if(engine.id==="add"){openEngineModal();return;}currentEngine=engine.id;notify(engine.name+" selected");});
+        visibleEngines().forEach(function(engine){
+          var b=document.createElement("button");b.type="button";b.className="engine-button";b.title=engine.name;b.setAttribute("aria-label","Use "+engine.name+" for search");b.setAttribute("aria-pressed",engine.id===currentEngine?"true":"false");
+          b.innerHTML=icon[engine.icon]||icon.plus;
+          b.addEventListener("click",function(){if(engine.id==="add"){openEngineModal();return;}currentEngine=engine.id;try{localStorage.setItem("inftab-mirror-current-engine",currentEngine);}catch(e){}renderEngines();});
           engineContainer.appendChild(b);
         });
       }
@@ -227,8 +236,10 @@
       document.getElementById("engine-form").addEventListener("submit",function(e){
         e.preventDefault();var name=document.getElementById("engine-name").value.trim();var url=document.getElementById("engine-url").value.trim();
         if(!name||!safeUrl(url.replace(/%s/g,"query"))){notify("Enter a valid http(s) search URL.");return;}
-        customEngines.push({id:"custom-"+Date.now(),name:name,url:url,icon:"google"});
-        try{localStorage.setItem("inftab-mirror-engines-v1",JSON.stringify(customEngines));}catch(e){}
+        var engineId="custom-"+Date.now();
+        customEngines.push({id:engineId,name:name,url:url,icon:"google"});
+        currentEngine=engineId;
+        try{localStorage.setItem("inftab-mirror-engines-v1",JSON.stringify(customEngines));localStorage.setItem("inftab-mirror-current-engine",currentEngine);}catch(e){}
         closeModal();renderEngines();notify("Search engine added.");
       });
       document.getElementById("close-modal").addEventListener("click",closeModal);

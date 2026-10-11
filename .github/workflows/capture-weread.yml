@@ -1,0 +1,42 @@
+name: Capture WeRead Public Homepage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install capture dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Capture public homepage
+        run: node sites/weread/capture.mjs
+      - name: Validate registry
+        run: node scripts/validate-registry.mjs
+      - name: Save before/after review evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: weread-reference
+          path: weread-reference/
+          retention-days: 7
+      - name: Commit generated visual snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sites/weread/index.html sites/weread/assets sites/weread/snapshot-status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "更新微信读书原站公开首页静态镜像"
+            git push
+          fi

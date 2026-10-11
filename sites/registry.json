@@ -30,6 +30,16 @@
       "previewPath": "sites/inftab/",
       "readme": "sites/inftab/README.md",
       "updatedAt": "2026-10-10"
+    },
+    {
+      "slug": "weread",
+      "name": "微信读书 WeRead",
+      "sourceUrl": "https://weread.qq.com/",
+      "description": "微信读书公开首页原站 DOM/CSS 静态快照采集项目；采集及逐屏验收尚未完成。",
+      "status": "building",
+      "previewPath": "sites/weread/",
+      "readme": "sites/weread/README.md",
+      "updatedAt": "2026-10-11"
     }
   ]
 }

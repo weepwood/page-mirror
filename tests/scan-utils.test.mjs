@@ -33,7 +33,11 @@ test('walkFiles 递归收集文件、POSIX 相对路径与体积', t => {
     assert.ok(file.abs.startsWith(dir));
     assert.equal(file.size, Buffer.byteLength(contents[file.rel]));
   }
+  // Must hold on Linux too, where path.sep is "/" and a literal backslash is
+  // still part of Windows-style paths supplied by callers.
   assert.equal(toPosix('docs\\build-audit.md'), 'docs/build-audit.md');
+  assert.equal(toPosix('docs/build-audit.md'), 'docs/build-audit.md');
+  assert.equal(toPosix('C:\\repo\\docs\\x.md'), 'C:/repo/docs/x.md');
 });
 
 test('collectHtml 只访问 HTML 文件，且复用同一遍历规则', t => {

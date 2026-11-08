@@ -1,11 +1,16 @@
 import { readdirSync, statSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { join, resolve } from 'node:path';
 
 const HTML_EXT = /\.html?$/i;
 
-/** Normalise a filesystem path to forward slashes for reports and URLs. */
+/**
+ * Normalise a filesystem path to forward slashes for reports and URLs.
+ * Replace the literal backslash rather than splitting on path.sep: on Linux
+ * path.sep is "/", so Windows-style paths coming from tests/constants would
+ * otherwise pass through unchanged.
+ */
 export function toPosix(path) {
-  return path.split(sep).join('/');
+  return path.replace(/\\/g, '/');
 }
 
 export function formatBytes(bytes) {

@@ -137,3 +137,53 @@ test('部署并发组隔离 PR，且采集链路显式调度发布', () => {
   assert.ok(capture.includes('actions: write'), '调度工作流需要 actions: write');
   assert.ok(capture.includes('npm run validate && npm test'), '采集工作流应运行完整校验');
 });
+
+test('404 页按请求路径推荐站点，且静态兜底始终可用', () => {
+  const html = read('404.html');
+  const base = new URL(homepage).pathname;
+  for (const token of [
+    'id="suggestion"', 'id="suggest-name"', 'id="suggest-detail"',
+    'id="suggest-link"', 'id="requested"', 'hidden aria-live="polite"',
+    "const BASE = '" + base + "'", "fetch(BASE + 'sites/registry.json')",
+    'box.hidden = false', 'linkEl.href = href', 'requested.textContent',
+  ]) {
+    assert.ok(html.includes(token), '404 页缺少 ' + token);
+  }
+  assert.match(html, /<section class="suggestion" id="suggestion" hidden/, '建议区默认隐藏');
+  assert.ok(html.includes('href="' + base + '"'), '保留静态兜底链接');
+  assert.ok(!/href="\.\//.test(html), '404 页不得使用相对路径');
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.doesNotThrow(() => new Function(script), '404 内联脚本必须可解析');
+  assert.ok(!script.includes('innerHTML'), '建议内容必须走 textContent，避免路径注入');
+  assert.ok(script.includes('exact || pick(sites)'), '精确匹配优先于模糊匹配');
+  assert.ok(script.includes('catch (_)'), '非法 URL 编码不应中断页面');
+});
+
+test('首页筛选进入浏览器历史，输入合并并支持 Esc 清空', () => {
+  const html = read('index.html');
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  for (const token of [
+    'historyMode', 'function renderWith(mode)', 'history.pushState', 'history.replaceState',
+    "writeUrlState(mode)", "renderWith('push')", "renderWith('none')",
+    'popstate', 'Escape', 'setTimeout(render,140)',
+    'if(summary.textContent!==counterText)',
+  ]) {
+    assert.ok(script.includes(token), '首页脚本缺少 ' + token);
+  }
+  assert.doesNotThrow(() => new Function(script), '内联脚本必须可解析');
+  assert.ok(script.includes("if(mode === 'none' || url === current) return;"), 'popstate 不得再写历史');
+});
+
+test('发布产物体检纳入审计命令与 CI 只读门禁', () => {
+  const pkg = JSON.parse(read('package.json'));
+  assert.ok(pkg.scripts['audit:build'], '缺少 audit:build 脚本');
+  assert.ok(pkg.scripts.audit.includes('audit:build'), 'npm run audit 应包含产物体检');
+  const workflow = read('.github/workflows/pages.yml');
+  assert.ok(workflow.includes('npm run audit:build -- --check'), 'CI 应在构建后运行只读门禁');
+  assert.ok(workflow.indexOf('npm run audit:build') > workflow.indexOf('npm run build'), '门禁必须在构建之后');
+  const source = read('scripts/audit-build.mjs');
+  for (const token of ['--check', '--json', 'REQUIRED_ROOT_FILES', 'hygieneIssue', 'formatBuildAudit', 'sitemap 遗漏站点']) {
+    assert.ok(source.includes(token), '体检脚本缺少 ' + token);
+  }
+  assert.ok(read('docs/build-audit.md').includes('# 发布产物体检'));
+});

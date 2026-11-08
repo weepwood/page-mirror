@@ -20,23 +20,25 @@ planned → building → review → completed
 
 ## 第 0 步 · 自动化基线
 
-    npm run check            # validate + test + build
-    npm run audit            # 生成 docs/link-audit.md 与 docs/external-assets.md
+    npm run check                  # validate + test + build
+    npm run audit                  # 刷新 docs/ 下三份自动报告
+    npm run audit:build -- --check # 只读门禁，CI 在构建后执行
 
-两个审计都扫描 `.site-build/`（实际发布产物），只诊断、不改写任何镜像 HTML。阅读 [链接健康报告](link-audit.md) 的逐站表格，记录该站点的：
+三个审计都扫描 `.site-build/`（实际发布产物），只诊断、不改写任何镜像 HTML；产物体检的 `--check` 会在必需文件缺失、内部文件混入或 sitemap 与产物不一致时阻断部署。阅读 [链接健康报告](link-audit.md) 的逐站表格，记录该站点的：
 
 - 根绝对路径引用数与分类（站内路由 / 缺失资源 / 已适配）
 - 快照本身缺失的资源
 - 本地相对资源缺失（正常应为 0）
 
-再阅读 [第三方外链报告](external-assets.md)，记录该站点向哪些第三方域名发起请求、是否包含追踪类脚本或原站统计 ID。
+再阅读 [第三方外链报告](external-assets.md)，记录该站点向哪些第三方域名发起请求、是否包含追踪类脚本或原站统计 ID；[产物体检报告](build-audit.md) 用于记录该站点的文件数、体积、最大文件与重复资源，并确认发布卫生无错误。
 
 ## 第 1 步 · 线上可达性
 
 - 首页 `https://weepwood.github.io/page-mirror/sites/<slug>/` 返回 200。
 - 浏览器网络面板中首屏资源无 4xx / 5xx；报告里的「缺失资源」逐项确认是否影响视觉。
 - 桌面 1280 与移动 375 均无横向溢出、无布局崩坏。
-- 刷新、直接访问已收录子页面、返回导航均正常。
+- 刷新、直接访问已收录子页面、返回导航均正常；目录页的筛选状态支持浏览器后退还原。
+- 点击一条未收录的站内路由，确认自定义 404 页给出该镜像首页的直达建议，且所有链接在子路径下可用。
 
 ## 第 2 步 · 人工对照
 
@@ -60,7 +62,7 @@ planned → building → review → completed
 1. 更新站点 README：验收日期、视口、结论、已知差异与授权备注。
 2. 更新 `sites/registry.json` 的 `status` 与 `updatedAt`。
 3. 运行 `npm run check`，推送后确认 Pages 部署成功。
-4. 重新运行 `npm run audit`，提交更新后的 [链接健康报告](link-audit.md) 与 [第三方外链报告](external-assets.md)。
+4. 重新运行 `npm run audit`，提交更新后的 [链接健康报告](link-audit.md)、[第三方外链报告](external-assets.md) 与 [产物体检报告](build-audit.md)。
 
 ## 验收记录模板
 
@@ -69,7 +71,7 @@ planned → building → review → completed
 
 - 日期：YYYY-MM-DD
 - 视口：1280×900 / 375×812
-- 自动化：npm run check 通过；链接报告该站 N 处根绝对引用（其中站内路由 X、缺失资源 Y）；外链报告 M 处第三方请求（追踪 Z）
+- 自动化：npm run check 通过；链接报告该站 N 处根绝对引用（其中站内路由 X、缺失资源 Y）；外链报告 M 处第三方请求（追踪 Z）；产物体检 F 个文件 / S MB，门禁错误 0
 - 人工对照：逐项结论（结构 / 样式 / 素材 / 交互 / 响应式 / 控制台）
 - 已知差异：未收录路由、上游缺失资源、动态内容
 - 授权：字体 / 图片 / 商标状态

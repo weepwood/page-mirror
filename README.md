@@ -20,11 +20,13 @@ https://weepwood.github.io/page-mirror/
 - scripts/validate-registry.mjs：校验站点目录、路径、状态、分类与导入记录一致性。
 - scripts/audit-links.mjs：扫描发布产物的链接健康并生成报告（只诊断，不改镜像 HTML）。
 - scripts/audit-external.mjs：登记镜像 HTML 向第三方域名发起的请求（只诊断，不改镜像 HTML）。
+- scripts/audit-build.mjs：体检发布产物的体积、重复内容、发布卫生与 sitemap 一致性（只诊断，不改镜像 HTML）。
 - scripts/sitemap.mjs：从 registry 生成 sitemap.xml，仅收录产物中真实存在的站点，URL 基准取 package.json 的 `homepage`。
 - index.html / 404.html / robots.txt / favicon.svg：站点目录与全局发布页面。
 - tests/：清单规则、发布过滤、首页与全局页面、sitemap 与链接扫描测试。
 - docs/link-audit.md：链接健康基线报告（自动生成，请勿手改）。
 - docs/external-assets.md：第三方外链资源清单（自动生成，请勿手改）。
+- docs/build-audit.md：发布产物体检报告（自动生成，请勿手改）。
 - docs/acceptance.md：站点验收 SOP 与状态流转规则。
 - .github/workflows/sync-mirrors.yml：首次同步及可选人工重新导入。
 - .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布；其 push 路径与同步工作流互斥，避免同一提交重复部署。
@@ -74,18 +76,28 @@ https://weepwood.github.io/page-mirror/
     npm run build -- --only=feralui      # 仅重建单个站点，保留其余产物
     npm run audit:links                  # 扫描产物链接健康并刷新 docs/link-audit.md
     npm run audit:external               # 登记第三方外链并刷新 docs/external-assets.md
-    npm run audit                        # 依次运行上面两个审计
+    npm run audit:build                  # 体检产物并刷新 docs/build-audit.md
+    npm run audit:build -- --check       # 只读门禁：错误时退出码 1，不写文件
+    npm run audit                        # 依次运行上面三个审计
     npm run check                        # validate + test + build
 
 构建时只把浏览器资源复制进 `.site-build/sites/<slug>/`，并在产物根目录发布 `404.html`、`robots.txt`、`favicon.svg` 与由 registry 生成的 `sitemap.xml`（全量构建 24 个 URL；`--only` 只列出产物中实际存在的站点）；规则集中在 `scripts/site-assets.mjs`：`MIRROR-IMPORT.json`、`package*.json`、`snapshot-status.json`、本地服务/采集/校验脚本（`server.js`、`shot*.js`、`validate.mjs` 等）、凭据文件、sourcemap 与 `reference/` 源码都不会发布。
 
-两个审计脚本不纳入 `npm run check`：它们会写入报告文件，适合验收前手动运行并提交结果。首页的状态筛选、搜索、排序与类型筛选都会写入 URL 查询参数，可直接分享或刷新恢复。
+三个审计脚本不纳入 `npm run check`：它们会写入报告文件，适合验收前手动运行并提交结果；其中 `audit:build -- --check` 是只读门禁，已接入 CI 的构建后检查。
+
+首页的状态筛选、搜索、排序与类型筛选都会写入 URL 查询参数，可直接分享或刷新恢复：离散筛选会 push 一条浏览器历史（后退可还原），连续输入则合并为一次 URL 写入；按 `/` 聚焦搜索、`Esc` 清空搜索或全部筛选。命中未收录的站内路由时，[404 页](404.html) 会根据请求路径从 `registry.json` 推测对应镜像，并给出直达该站首页的建议链接；脚本不可用时静态入口仍然可用。
+
+## 发布产物体检
+
+`npm run audit:build` 只读扫描 `.site-build/`（真正部署的产物），生成 [产物体检报告](docs/build-audit.md)：文件数、逐站点体积、最大文件、内容完全相同的重复资源、必需文件、发布卫生违规，以及 sitemap 与产物站点是否一致。`-- --check` 作为 CI 只读门禁运行，**错误**（必需文件缺失、内部文件/凭据混入、站点缺 `index.html`、sitemap 与产物不一致）会阻断部署；**提示**（`--only` 部分构建、重复资源、体积超阈值）只记录不阻断。
+
+基线（2026-11-08）：2442 个文件 / 152.0 MB / 23 个站点，18 组重复内容约 1.3 MB，错误 0、提示 0。重复资源多为各镜像自带的同一份脚本或贴图，按 1:1 独立原则不在构建期合并。
 
 ## 链接策略
 
 镜像快照通常只收录原站首页，站内导航仍指向原站根路径。经确认，**不自动改写镜像 HTML**：构建脚本只把本地确实存在的根绝对资源重写为相对路径，其余引用统一登记在自动生成的 [链接健康报告](docs/link-audit.md)。
 
-基线（2026-11-08）：636 处根绝对引用中 543 处为快照未收录的站内路由、6 处为上游快照缺失资源、87 处已适配，本地相对资源缺失 0。具体数字随产物变化，以报告为准；逐站处理规则见 [验收 SOP](docs/acceptance.md)。
+基线（2026-11-08）：636 处根绝对引用中 543 处为快照未收录的站内路由、6 处为上游快照缺失资源、87 处已适配，本地相对资源缺失 0。具体数字随产物变化，以报告为准；逐站处理规则见 [验收 SOP](docs/acceptance.md)。点击这类路由会落到自定义 404 页，页面会按请求路径推荐对应镜像的首页，而不是让访问者停在空白错误页。
 
 ## 第三方外链
 

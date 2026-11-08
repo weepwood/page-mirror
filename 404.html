@@ -9,22 +9,32 @@
   <title>页面未找到 — Page Mirror</title>
   <!-- GitHub Pages serves this file for ANY missing path. Relative URLs would resolve
        against the requested path, so every internal link uses the absolute Pages
-       subpath. Keep it in sync with package.json "homepage" (checked by tests). -->
+       subpath. Keep BASE in sync with package.json "homepage" (checked by tests). -->
   <link rel="icon" href="/page-mirror/favicon.svg" type="image/svg+xml">
   <style>
-    :root{color-scheme:dark;--bg:#101114;--surface:#1c1f26;--line:#2a2d36;--text:#f2f4f7;--muted:#949aa8;--accent:#b9f36a}
+    :root{color-scheme:dark;--bg:#101114;--surface:#1c1f26;--surface-2:#16181e;--line:#2a2d36;--line-strong:#414754;--text:#f2f4f7;--muted:#949aa8;--accent:#b9f36a}
     *{box-sizing:border-box}
     body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse 60% 42% at 12% -10%,#1d2718 0,transparent 72%),var(--bg);color:var(--text);font:400 16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     main{max-width:560px;padding:40px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
     .code{margin:0;color:var(--accent);font:600 14px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase}
     h1{margin:16px 0 12px;font-size:clamp(32px,6vw,48px);line-height:1.1;letter-spacing:-.05em;font-weight:600}
     p{margin:0;color:var(--muted);font-size:16px}
+    .path{margin-top:16px;font-size:13px}
+    code{font:400 13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);overflow-wrap:anywhere}
     .note{margin-top:24px;padding:16px;border-left:2px solid var(--accent);font-size:14px}
+    /* Progressive enhancement: with JS disabled or registry unavailable, the two
+       static actions below remain the whole experience; the suggestion stays hidden. */
+    .suggestion[hidden]{display:none}
+    .suggestion{margin-top:24px;padding:20px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface-2)}
+    .label{margin:0;color:var(--accent);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+    .suggestion strong{display:block;margin-top:10px;font-size:18px;font-weight:600;color:var(--text)}
+    .suggestion .detail{margin-top:8px;font-size:14px}
     .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
     a{display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border:1px solid var(--line);border-radius:12px;color:var(--text);text-decoration:none;font-size:14px;transition:background 180ms cubic-bezier(.2,.8,.2,1),border-color 180ms cubic-bezier(.2,.8,.2,1)}
     a:hover{background:#242832;border-color:#414754}
     a.primary{background:var(--accent);border-color:var(--accent);color:#111410;font-weight:600}
     a.primary:hover{background:#eefbdc}
+    .suggestion a{margin-top:18px}
     a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     @media(prefers-reduced-motion:reduce){a{transition:none}}
   </style>
@@ -34,11 +44,92 @@
     <p class="code">404 · Page Mirror</p>
     <h1>这个页面不在镜像目录里。</h1>
     <p>地址可能已变更，或者你跟随的是某个镜像站点内部的原站路由。</p>
+    <p class="path">请求地址：<code id="requested">—</code></p>
+    <section class="suggestion" id="suggestion" hidden aria-live="polite" aria-label="可能的站点建议">
+      <p class="label">根据地址推测</p>
+      <strong id="suggest-name"></strong>
+      <p class="detail" id="suggest-detail"></p>
+      <a class="primary" id="suggest-link" href="/page-mirror/">打开镜像首页</a>
+    </section>
     <p class="note">镜像快照通常只收录原站首页；站内导航仍指向原站路径，在 GitHub Pages 子路径下无法解析。这类已知差异登记在 <code>docs/link-audit.md</code>。</p>
     <div class="actions">
       <a class="primary" href="/page-mirror/">返回站点目录</a>
       <a href="/page-mirror/#sites">跳到站点列表</a>
     </div>
   </main>
+  <script>
+    (function () {
+      const BASE = '/page-mirror/';
+      const box = document.getElementById('suggestion');
+      const nameEl = document.getElementById('suggest-name');
+      const detailEl = document.getElementById('suggest-detail');
+      const linkEl = document.getElementById('suggest-link');
+      const requested = document.getElementById('requested');
+
+      // Decode for display only; a malformed escape must never break the page.
+      let path = location.pathname;
+      try { path = decodeURIComponent(path); } catch (_) { /* keep the raw path */ }
+      requested.textContent = path || '/';
+
+      const baseParts = BASE.split('/').filter(Boolean);
+      const parts = location.pathname.split('/').filter(Boolean);
+      const local = parts.slice(0, baseParts.length).join('/') === baseParts.join('/')
+        ? parts.slice(baseParts.length) : parts;
+      const siteParts = local[0] === 'sites' ? local.slice(1) : local;
+      const hint = String(siteParts[0] || '').toLowerCase().replace(/\.(?:html?|php|aspx)$/i, '');
+      const rest = '/' + siteParts.slice(1).join('/');
+      if (!hint) return; // Nothing to guess; the static actions are enough.
+
+      function distance(a, b) {
+        const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+        for (let i = 1; i <= a.length; i++) {
+          let prev = row[0];
+          row[0] = i;
+          for (let j = 1; j <= b.length; j++) {
+            const tmp = row[j];
+            row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+            prev = tmp;
+          }
+        }
+        return row[b.length];
+      }
+      function score(text, query) {
+        if (text === query) return 0;
+        if (text.startsWith(query) || query.startsWith(text)) return 1;
+        if (text.includes(query) || query.includes(text)) return 2;
+        const d = distance(text, query);
+        return d <= 2 ? 3 + d : Infinity;
+      }
+      function pick(sites) {
+        let best = null, bestScore = Infinity;
+        for (const site of sites) {
+          const slug = String(site.slug || '').toLowerCase();
+          const alias = String(site.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const value = Math.min(score(slug, hint), alias ? score(alias, hint) : Infinity);
+          if (value < bestScore) { bestScore = value; best = site; }
+        }
+        return bestScore <= 5 ? best : null;
+      }
+
+      fetch(BASE + 'sites/registry.json')
+        .then(response => response.ok ? response.json() : Promise.reject(new Error('registry unavailable')))
+        .then(data => {
+          const sites = Array.isArray(data.sites) ? data.sites : [];
+          const exact = sites.find(site => String(site.slug).toLowerCase() === hint);
+          const site = exact || pick(sites);
+          if (!site) return;
+          const href = BASE + (site.previewPath || 'sites/' + encodeURIComponent(site.slug) + '/');
+          const name = site.name || site.slug;
+          nameEl.textContent = name;
+          detailEl.textContent = exact
+            ? '你访问的是该镜像内部的 ' + rest + '，快照通常只收录首页；原站路由不在镜像内。'
+            : '地址与这个站点相近，可能是路径变更或拼写差异。';
+          linkEl.href = href;
+          linkEl.textContent = '打开 ' + name;
+          box.hidden = false;
+        })
+        .catch(() => { /* Static fallback stays visible. */ });
+    })();
+  </script>
 </body>
 </html>

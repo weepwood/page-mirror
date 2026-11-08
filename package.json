@@ -11,7 +11,8 @@
     "build": "node scripts/build-site.mjs",
     "audit:links": "node scripts/audit-links.mjs",
     "audit:external": "node scripts/audit-external.mjs",
-    "audit": "npm run audit:links && npm run audit:external",
+    "audit:build": "node scripts/audit-build.mjs",
+    "audit": "npm run audit:links && npm run audit:external && npm run audit:build",
     "import:mirrors": "node scripts/import-mirrors.mjs",
     "add-mirror": "node scripts/add-mirror.mjs",
     "check": "npm run validate && npm test && npm run build"

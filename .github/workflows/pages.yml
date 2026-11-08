@@ -59,6 +59,8 @@ jobs:
         run: npm test
       - name: Build independent sites
         run: npm run build
+      - name: Audit published build (read-only gate)
+        run: npm run audit:build -- --check
       - name: Upload site build artifact for deployment
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7

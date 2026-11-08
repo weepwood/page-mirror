@@ -218,6 +218,9 @@
     const validKind = new Set(['all', ...Object.keys(kindLabels)]);
     const validSort = new Set(['slug','name','updated','status']);
     let sites = [], statusFilter = 'all', kindFilter = 'all', sortBy = 'slug';
+    /* Typing replaces the current history entry, a discrete filter change pushes
+       one (so Back restores it), and popstate writes nothing at all. */
+    let historyMode = 'replace';
     function esc(value=''){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
     /* The directory view is shareable: every visible filter lives in the query
        string. replaceState avoids filling history while the user types. Values
@@ -234,7 +237,7 @@
       sortBy = validSort.has(so) ? so : 'slug';
       sort.value = sortBy;
     }
-    function writeUrlState(){
+    function writeUrlState(mode){
       const p = new URLSearchParams();
       const q = search.value.trim();
       if(q) p.set('q', q);
@@ -242,7 +245,11 @@
       if(kindFilter !== 'all') p.set('kind', kindFilter);
       if(sortBy !== 'slug') p.set('sort', sortBy);
       const qs = p.toString();
-      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+      const url = location.pathname + (qs ? '?' + qs : '') + location.hash;
+      const current = location.pathname + location.search + location.hash;
+      if(mode === 'none' || url === current) return;
+      if(mode === 'push') history.pushState(null, '', url);
+      else history.replaceState(null, '', url);
     }
     function emptyMarkup(title,hint,clearable){
       return '<div class="empty"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg><strong>'+title+'</strong><span>'+hint+'</span>'+(clearable?'<button type="button" class="clear" id="clear">清除筛选</button>':'')+'</div>';
@@ -266,9 +273,12 @@
       if(sortBy==='status') return rank(a)-rank(b)||a.slug.localeCompare(b.slug);
       return a.slug.localeCompare(b.slug);
     }
+    function renderWith(mode){historyMode = mode; render();}
     function render(){
       syncFilters();
-      writeUrlState();
+      const mode = historyMode;
+      historyMode = 'replace';
+      writeUrlState(mode);
       const q=search.value.trim().toLowerCase();
       const shown=sites
         .filter(s=>[s.name,s.slug,s.description,s.sourceUrl,kindLabels[s.kind]||'',...(Array.isArray(s.tags)?s.tags:[])].join(' ').toLowerCase().includes(q))
@@ -277,13 +287,16 @@
         .sort(comparator);
       const completed=sites.filter(s=>s.status==='completed').length;
       const counter=shown.length===sites.length?sites.length+' 个站点':'显示 '+shown.length+' / '+sites.length+' 个站点';
-      summary.textContent=sites.length?counter+' · '+completed+' 个已验收':'尚无登记站点';
+      /* Only announce when the count actually changes: typing the same result
+         set must not make the polite live region chatter on every keystroke. */
+      const counterText=sites.length?counter+' · '+completed+' 个已验收':'尚无登记站点';
+      if(summary.textContent!==counterText) summary.textContent=counterText;
       if(!shown.length){
         const title=sites.length?'没有找到匹配的站点':'镜像站点目录已就绪';
         const hint=sites.length?'试试其他关键词，或切换状态筛选。':'添加第一个站点后，它会显示在这里。子项目应放在 sites/&lt;slug&gt;/ 下，并登记到 registry.json。';
         list.innerHTML=emptyMarkup(title,hint,sites.length>0);
         const clear=document.querySelector('#clear');
-        if(clear) clear.addEventListener('click',()=>{search.value='';statusFilter='all';kindFilter='all';kindSelect.value='all';search.focus();render();});
+        if(clear) clear.addEventListener('click',()=>{search.value='';statusFilter='all';kindFilter='all';kindSelect.value='all';search.focus();renderWith('push');});
         return;
       }
       list.innerHTML=shown.map(s=>{
@@ -298,13 +311,25 @@
       const btn=e.target.closest('.chip');
       if(!btn) return;
       statusFilter=btn.dataset.status;
-      render();
+      renderWith('push');
     });
-    search.addEventListener('input',render);
-    sort.addEventListener('change',()=>{sortBy=sort.value;render();});
-    kindSelect.addEventListener('change',()=>{kindFilter=kindSelect.value;render();});
-    window.addEventListener('popstate',()=>{readUrlState();render();});
+    /* Debounce typing: 23 cards do not need it for speed, but it collapses a
+       burst of keystrokes into one live-region announcement and one URL write. */
+    let inputTimer=0;
+    search.addEventListener('input',()=>{clearTimeout(inputTimer);inputTimer=setTimeout(render,140);});
+    sort.addEventListener('change',()=>{sortBy=sort.value;renderWith('push');});
+    kindSelect.addEventListener('change',()=>{kindFilter=kindSelect.value;renderWith('push');});
+    window.addEventListener('popstate',()=>{clearTimeout(inputTimer);readUrlState();renderWith('none');});
     document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'&&document.activeElement===search){
+        if(search.value){
+          search.value='';clearTimeout(inputTimer);renderWith('push');e.preventDefault();
+        }else if(statusFilter!=='all'||kindFilter!=='all'||sortBy!=='slug'){
+          statusFilter='all';kindFilter='all';sortBy='slug';
+          kindSelect.value='all';sort.value='slug';renderWith('push');e.preventDefault();
+        }
+        return;
+      }
       if(e.key!=='/'||e.metaKey||e.ctrlKey||e.altKey) return;
       const t=e.target;
       if(t instanceof HTMLElement&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;

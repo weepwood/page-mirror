@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";var t=e(),n=300,r=300;function i({speed:e=50,corner:i=20}){let a=4-e/100*2.6;return(0,t.jsx)(`div`,{className:`ish`,style:{width:n,height:r},children:(0,t.jsx)(`div`,{className:`ish-tile`,role:`img`,"aria-label":`An image loading`,style:{"--ish-dur":`${a.toFixed(2)}s`,"--ish-r":`${i}px`}})})}export{i as ImageShimmer};

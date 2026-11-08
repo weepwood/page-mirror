@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- maximum-scale + user-scalable=no turn off pinch. This
+         tag is the half that Android Chrome and most other
+         engines honour; iOS Safari has ignored it since iOS 10,
+         so the WebKit half is done from main.tsx, and body
+         carries `touch-action: pan-x pan-y` for the engines
+         that decide it in CSS. Three layers because no single
+         one of them covers every phone. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <!-- The tab, and the blue headline on a search result —
+         they are the same string and this is the only place it
+         is written. Front-loaded on purpose: Google truncates
+         a title around 60 characters and a phone tab shows
+         about the first twelve, so the name comes first and
+         the description earns whatever is left. -->
+    <!-- The search snippet, and the fallback description for
+         anything that unfurls a link and finds no Open Graph.
+         Under 160 characters, because that is where Google
+         truncates. -->
+    <!-- ── what a shared link looks like ───────────────────────
+         There was none of this, and a page with no og:image is
+         not a page with no picture: every unfurler falls back to
+         whatever icon it can find, which is why a link posted
+         anywhere came up wearing the favicon.
+
+         ABSOLUTE URLs, and that is not optional. Facebook,
+         LinkedIn, Slack and iMessage all refuse a relative
+         og:image — the crawler has no document to resolve it
+         against — so this is the one place in the project that
+         hard-codes the domain.
+
+         1200x630 is the size to give it. Facebook and LinkedIn
+         crop a large card to 1.91:1 and Twitter to 2:1, so a
+         picture at some other ratio is cropped differently on
+         every service; at 1.91:1 they all show close to the
+         whole thing. The file is a centre cut of a 2168x1428
+         original — the orbit page — and the goat sits dead in
+         the middle, so it survives Twitter's 2:1 with room to
+         spare. Everything around it is cards bleeding off the
+         edges, which is what they do on the page too.
+
+         A NEW FILENAME, not a new file at the old name. Every
+         unfurler caches by URL and several of them for days:
+         Facebook and LinkedIn hold the old picture until
+         somebody runs their debugger against the link, and
+         iMessage effectively never lets go. Changing the name
+         is the only version of this that works the same day.
+         The previous cover stays on disk so links already
+         posted keep resolving.
+
+         NO og:url. It is the canonical address, and setting it
+         to the root would make every shared BLOCK — which is a
+         query string, ?c=slide-confirm — unfurl as the home
+         page. Left out, the unfurler shows the address it was
+         actually given. -->
+    <meta property="og:site_name" content="Bencho" />
+    <!-- og:description, not just the plain one above. Most
+         unfurlers fall back to name="description" and some --
+         Slack and Discord among them -- prefer this and show a
+         blank line without it.
+
+         ONE OF THEM. There were two: a short one written first
+         and this fuller one added underneath with the note
+         above, and the first was never taken out. Two
+         og:description tags is a page telling a crawler two
+         things and letting it pick, and the one it picks is
+         the shorter, older copy. Same for twitter below. -->
+    <!-- summary_large_image, or X draws a small square thumbnail
+         beside the text and the cover becomes a crop of its own
+         middle. The four tags below repeat the Open Graph ones
+         because X reads og:* only when its own are absent, and
+         being explicit is cheaper than depending on that. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- ── the mark, in the tab ────────────────────────────────
+         INLINE, not /favicon.svg, and that is about the bundle.
+         This app also ships as one self-contained bundle.html you
+         can send to somebody and open off a disk — and a root
+         path has nothing to resolve against there, so a linked
+         file is a broken icon in the one format the project goes
+         out of its way to support. A data URI travels with the
+         markup and is correct in all three places: dev server,
+         deployed site, single file.
+
+         The colour follows the BROWSER's theme rather than the
+         site's, via a media query inside the SVG. The tab strip
+         is the surface this is sitting on, and it has a theme of
+         its own that has nothing to do with the page's.
+
+         BASE64 rather than plain percent-encoding, and not for
+         size — it is larger. Vite scans index.html for <style>
+         blocks and hands what it finds to PostCSS, and the media
+         query above is literally the text `<style>…` sitting in
+         an attribute. Percent-encoded, the scanner found it and
+         the build died on "Missed semicolon" in a stylesheet
+         nobody wrote. Base64 puts it out of reach of a scanner
+         that reads markup as text. -->
+    <!-- ── and files a crawler can fetch ───────────────────────
+         Google cannot read a data URI, so for a search result it
+         went looking for a file, found none, and kept showing
+         whatever it had cached — the goat. These two are for it
+         (a square in a multiple of 48, on a white ground, since
+         a result draws the icon in a circle on white) and for
+         anything else that asks for /favicon.ico by habit. They
+         come BEFORE the inline SVG: a browser takes the last
+         icon it can use, so the tab still gets the SVG and its
+         dark-mode colour. -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" href="/favicon-192.png" sizes="192x192" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48c3R5bGU+Lmh7ZmlsbDojMTcxODFhfS5ze2ZpbGw6I2ZiZmJmYX1AbWVkaWEocHJlZmVycy1jb2xvci1zY2hlbWU6ZGFyayl7Lmh7ZmlsbDojM2EzYjQwfX08L3N0eWxlPjxwYXRoIGNsYXNzPSJoIiBkPSJNNTkuNTMgOC41TDgxLjE4IDIxQzg3LjUyNjcgMjQuNjY2NyA5MC43IDMwLjE2NjcgOTAuNyAzNy41VjYyLjVDOTAuNyA2OS44MzMzIDg3LjUyNjcgNzUuMzMzMyA4MS4xOCA3OUw1OS41MyA5MS41QzUzLjE3NjcgOTUuMTY2NyA0Ni44MjMzIDk1LjE2NjcgNDAuNDcgOTEuNUwxOC44MiA3OUMxMi40NzMzIDc1LjMzMzMgOS4zIDY5LjgzMzMgOS4zIDYyLjVWMzcuNUM5LjMgMzAuMTY2NyAxMi40NzMzIDI0LjY2NjcgMTguODIgMjFMNDAuNDcgOC41QzQ2LjgyMzMgNC44MzMzMyA1My4xNzY3IDQuODMzMzMgNTkuNTMgOC41WiIvPjxwYXRoIGNsYXNzPSJzIiBkPSJNNTMuODkwOCAxOS41ODMyQzU2LjI1OCAxOS4zNzYyIDU3LjgwNjMgMjAuNjc2OCA1OS43MjUyIDIxLjg0OUw2NC42MjE2IDI0LjgyOTVMNzAuMTk5NiAyOC4xNjUyQzcxLjExNjYgMjguNzIzNCA3Mi40NDY1IDI5LjQ4OTQgNzMuMjQxNCAzMC4xNTFDNzQuMDcwNyAzMC44MzE1IDc0LjcyMzYgMzEuNzAxOSA3NS4xNDQ5IDMyLjY4ODVDNzcuODEyOCAzOC43OTI4IDcyLjA2MjEgNDcuODc4NSA2Ny4yNjY2IDUwLjg3NjJDNTguMTM0NSA1Ni41ODQ5IDUwLjg3OTMgNjIuMzExOCA0OS4zMzIgNzMuNTU0MUM0OC45Mzk4IDc2LjQwMzMgNDkuMjc2NSA3OC44OTUxIDQ2LjAwNzcgODAuMjY0OEM0NC42OTExIDgwLjY0NzEgNDMuNDAyMiA4MC4zNzQ5IDQyLjIzNTYgNzkuNjgyOEMzOC4zMDg0IDc3LjM1MjEgMzQuNDIwNiA3NC45NTM4IDMwLjQ5NyA3Mi42MTU3QzI5LjI2MjggNzEuODgwMyAyNy42MDczIDcwLjk3NzQgMjYuNTc2NCA3MC4wMjIxQzI1LjYxOTkgNjkuMTI1MSAyNC45MjE5IDY3Ljk4NzQgMjQuNTU1NiA2Ni43MjgyQzIzLjkxNjEgNjQuNTcxNyAyNC4xODI4IDYyLjUwMzMgMjQuODIxIDYwLjQwNDFDMjcuMDY0IDUyLjQ5ODQgMzQuMjAzMiA0OS4yNTM1IDQwLjA4MzQgNDQuNDQ0MUM0NS41MzAyIDM5Ljk4OSA0OS4zNDAxIDMzLjc2MDEgNTAuMzMyIDI2LjczNDFDNTAuNTcxMyAyNS4wMzg2IDUwLjQ5MTMgMjIuOTI0NSA1MS4xODg3IDIxLjM3NDRDNTEuNjA0NSAyMC40NTA0IDUyLjk1OTIgMTkuODM0NiA1My44OTA4IDE5LjU4MzJaIi8+PC9zdmc+" />
+
+    <!-- Home screens want an opaque square: iOS composites this
+         over the wallpaper and paints no ground of its own, so a
+         transparent mark would be a goat floating on somebody's
+         photo. Left as a file — it only matters when the site is
+         actually served, which is exactly when files resolve. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Fonts. Two hosts: the CSS comes from googleapis, the font
+         files from gstatic, so both are worth warming. crossorigin
+         on the second is required — font fetches are CORS, and
+         without it the preconnect opens a connection the font
+         request cannot reuse. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400..700&family=Instrument+Sans:wght@400;500;600&family=Inter:wght@300..700&display=swap"
+    />
+    <script type="module" crossorigin src="/assets/index-DTeREl5f.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/jsx-runtime-Cx0BB4qO.js">
+    <link rel="modulepreload" crossorigin href="/assets/react-3BKWdGy3.js">
+    <link rel="modulepreload" crossorigin href="/assets/MotionConfigContext-Ceqz_Eug.js">
+    <link rel="modulepreload" crossorigin href="/assets/single-value-D8nloJBr.js">
+    <link rel="modulepreload" crossorigin href="/assets/proxy-CQhLXnbd.js">
+    <link rel="modulepreload" crossorigin href="/assets/spring-BlTUx5Yd.js">
+    <link rel="modulepreload" crossorigin href="/assets/createLucideIcon-DMASS5FJ.js">
+    <link rel="modulepreload" crossorigin href="/assets/square-Cur0Ih6q.js">
+    <link rel="modulepreload" crossorigin href="/assets/grid-2x2-C6_v5rBD.js">
+    <link rel="modulepreload" crossorigin href="/assets/sound-Q67qmSVK.js">
+    <link rel="modulepreload" crossorigin href="/assets/heart-zkPzadB3.js">
+    <link rel="modulepreload" crossorigin href="/assets/skip-forward-DwrVeFzU.js">
+    <link rel="modulepreload" crossorigin href="/assets/motion-gppNsAIH.js">
+    <link rel="modulepreload" crossorigin href="/assets/Sound-CkkXmLuv.js">
+    <link rel="modulepreload" crossorigin href="/assets/preload-helper-Czpn1I53.js">
+    <link rel="modulepreload" crossorigin href="/assets/catalog-BrgNyp_W.js">
+    <link rel="modulepreload" crossorigin href="/assets/mail-BwNcsZqj.js">
+    <link rel="modulepreload" crossorigin href="/assets/contact-DQ__19Ir.js">
+    <link rel="modulepreload" crossorigin href="/assets/supabase-C_WvPkgj.js">
+    <link rel="modulepreload" crossorigin href="/assets/cloud-rZ3e_HUY.js">
+    <link rel="modulepreload" crossorigin href="/assets/authStore-D7GS-_zP.js">
+    <link rel="modulepreload" crossorigin href="/assets/sponsorship-B2zluewz.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-BkQudODL.css">
+    <title>Bencho — Interactive React UI Components &amp; Micro-interactions</title>
+    <meta name="description" content="A library of interactive UI blocks you can explore, tweak, and take straight into your projects. Everything is live, not mocked." />
+    <link rel="canonical" href="https://bencho.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bencho.dev/" />
+    <meta property="og:title" content="Bencho — Interactive React UI Components &amp; Micro-interactions" />
+    <meta property="og:description" content="A library of interactive UI blocks you can explore, tweak, and take straight into your projects. Everything is live, not mocked." />
+    <meta property="og:image" content="https://bencho.dev/share-cover-ring.png" />
+    <meta name="twitter:title" content="Bencho — Interactive React UI Components &amp; Micro-interactions" />
+    <meta name="twitter:description" content="A library of interactive UI blocks you can explore, tweak, and take straight into your projects. Everything is live, not mocked." />
+    <meta name="twitter:image" content="https://bencho.dev/share-cover-ring.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Bencho","url":"https://bencho.dev"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Interactive UI blocks","url":"https://bencho.dev/","numberOfItems":138}</script>
+  </head>
+  <body>
+    <noscript><main class="seo-shell"><h1>Interactive UI Components</h1><p>A library of interactive React components and micro-interactions you can explore and take straight into your projects.</p><ul><li><a href="/blocks/ink-bloom">Ink bloom — Press</a></li><li><a href="/blocks/peek-rating">Peek rating — Hover</a></li><li><a href="/blocks/load-cards">Load cards — Press</a></li><li><a href="/blocks/edge-light">Edge light — Hover</a></li><li><a href="/blocks/line-sidebar">Line sidebar — Hover</a></li><li><a href="/blocks/card-swap">Card swap — Drag</a></li><li><a href="/blocks/dot-swarm">Dot swarm — Hover</a></li><li><a href="/blocks/option-wheel">Option wheel — Drag</a></li><li><a href="/blocks/wake-slider">Wake slider — Drag</a></li><li><a href="/blocks/line-sphere">Line sphere — Hover</a></li><li><a href="/blocks/page-peel">Page peel — Drag</a></li><li><a href="/blocks/stacked-bars">Stacked bars — Hover</a></li><li><a href="/blocks/blast-radius">Network graph — Hover</a></li><li><a href="/blocks/connect-sources">Integrations — Press</a></li><li><a href="/blocks/blueprint-loader">Blueprint loader — Loading</a></li><li><a href="/blocks/ai-chat-input">AI chat input — Type</a></li><li><a href="/blocks/faq-accordion">FAQ accordion — Press</a></li><li><a href="/blocks/avatar-group">Avatar group — Hover</a></li><li><a href="/blocks/profile-card">Profile hover card — Hover</a></li><li><a href="/blocks/resizable-panels">Resizable panels — Drag</a></li><li><a href="/blocks/toast-stack">Toast stack — Hover</a></li><li><a href="/blocks/dot-loader">Dot loader — Loading</a></li><li><a href="/blocks/image-shimmer">Image shimmer — Loading</a></li><li><a href="/blocks/shimmer-text">Shimmer text — Loading</a></li><li><a href="/blocks/orbit-cards">Orbit cards — Drag</a></li><li><a href="/blocks/metaballs">Metaballs — Hover</a></li><li><a href="/blocks/tree-view">Tree view — Press</a></li><li><a href="/blocks/access-request">Access request — Press</a></li><li><a href="/blocks/code-reveal">Code reveal — Hover</a></li><li><a href="/blocks/budget-slider">Budget slider — Drag</a></li><li><a href="/blocks/emoji-reactions">Emoji reactions — Hover</a></li><li><a href="/blocks/country-wheel">Country wheel — Drag</a></li><li><a href="/blocks/folder">Folder — Hover</a></li><li><a href="/blocks/foggy-word">Foggy word — Hover</a></li><li><a href="/blocks/coin">Coin — Drag</a></li><li><a href="/blocks/text-fade">Text fade — Press</a></li><li><a href="/blocks/text-rise">Text rise — Press</a></li><li><a href="/blocks/text-blur">Text blur — Press</a></li><li><a href="/blocks/tab-bar">Tab bar — Press</a></li><li><a href="/blocks/range">Range — Drag</a></li><li><a href="/blocks/tape">Tape — Drag</a></li><li><a href="/blocks/pay-button">Pay button — Press</a></li><li><a href="/blocks/collapsing-sidebar">Collapsing sidebar — Press</a></li><li><a href="/blocks/copy-field">Copy field — Press</a></li><li><a href="/blocks/fold-dropdown">Dropdown — Press</a></li><li><a href="/blocks/confetti">Confetti — Press</a></li><li><a href="/blocks/picker-wheel">Picker wheel — Drag</a></li><li><a href="/blocks/split-view">Split view — Drag</a></li><li><a href="/blocks/album-shelf">Album shelf — Hover</a></li><li><a href="/blocks/piano">Piano — Press</a></li><li><a href="/blocks/hub-diagram">Hub diagram — Hover</a></li><li><a href="/blocks/billing-card">Billing card — Press</a></li><li><a href="/blocks/wave-loader">Wave loader — Loop</a></li><li><a href="/blocks/bounce-loader">Bounce loader — Loop</a></li><li><a href="/blocks/trace-loader">Trace loader — Loop</a></li><li><a href="/blocks/morph-loader">Morph loader — Loop</a></li><li><a href="/blocks/pixel-loader">Pixel loader — Loop</a></li><li><a href="/blocks/blocks-loader">Blocks loader — Loop</a></li><li><a href="/blocks/flight-island">Flight island — Press</a></li><li><a href="/blocks/music-island">Music island — Press</a></li><li><a href="/blocks/call-island">Call island — Press</a></li><li><a href="/blocks/pill-accordion">Pill accordion — Press</a></li><li><a href="/blocks/resize-frame">Resize frame — Drag</a></li><li><a href="/blocks/progressive-blur">Progressive blur — Hover</a></li><li><a href="/blocks/feedback-bar">Feedback bar — Press</a></li><li><a href="/blocks/price-flow">Price flow — Press</a></li><li><a href="/blocks/card-fan">Card fan — Press</a></li><li><a href="/blocks/smudge">Smudge — Hover</a></li><li><a href="/blocks/swipe-deck">Swipe deck — Swipe</a></li><li><a href="/blocks/radial-pop-out">Radial pop-out — Hover</a></li><li><a href="/blocks/form-error">Form error — Type</a></li><li><a href="/blocks/heart-rate">Heart rate — Hover</a></li><li><a href="/blocks/light">Light — Hover</a></li><li><a href="/blocks/segment-timer">Segment timer — Drag</a></li><li><a href="/blocks/password-strength">Password strength — Type</a></li><li><a href="/blocks/thinking">Thinking — Press</a></li><li><a href="/blocks/activity-stack">Activity stack — Swipe</a></li><li><a href="/blocks/ticket">Ticket — Drag</a></li><li><a href="/blocks/share-pill">Share pill — Hover</a></li><li><a href="/blocks/voice-chat">Voice chat — Press</a></li><li><a href="/blocks/world-clock">World clock — Drag</a></li><li><a href="/blocks/skeleton-morph">Skeleton morph — Press</a></li><li><a href="/blocks/date-reel">Date reel — Swipe</a></li><li><a href="/blocks/folding-bill">Folding bill — Drag</a></li><li><a href="/blocks/magnetic-dots">Magnetic dots — Hover</a></li><li><a href="/blocks/dot-globe">Dot globe — Drag</a></li><li><a href="/blocks/sweep-button">Sweep button — Hover</a></li><li><a href="/blocks/asset-swap">Asset swap — Press</a></li><li><a href="/blocks/ascii-wake">ASCII wake — Hover</a></li><li><a href="/blocks/heat-word">Heat map — Hover</a></li><li><a href="/blocks/image-compare">Image compare — Drag</a></li><li><a href="/blocks/like">Like — Press</a></li><li><a href="/blocks/signature">Signature pad — Drag</a></li><li><a href="/blocks/voice-note">Voice note — Press</a></li><li><a href="/blocks/eye-tracker">Eye tracker — Hover</a></li><li><a href="/blocks/dynamic-island">Dynamic island — Press</a></li><li><a href="/blocks/time-scrubber">Time scrubber — Slide</a></li><li><a href="/blocks/upload-dropzone">Upload dropzone — Drag</a></li><li><a href="/blocks/rolling-counter">Rolling counter — Drag</a></li><li><a href="/blocks/particles">Particles — Hover</a></li><li><a href="/blocks/label-input">Label input — Type</a></li><li><a href="/blocks/one-time-code">One-time code — Type</a></li><li><a href="/blocks/generate">Generate — Press</a></li><li><a href="/blocks/step-player">Step player — Press</a></li><li><a href="/blocks/todo-tower">Todo tower — Press</a></li><li><a href="/blocks/image-accordion">Image accordion — Hover</a></li><li><a href="/blocks/glass-bubble">Glass bubble — Drag</a></li><li><a href="/blocks/action-node">Action node — Hover</a></li><li><a href="/blocks/magnet-select">Magnetic select — Select</a></li><li><a href="/blocks/slide-confirm">Slide to confirm — Drag</a></li><li><a href="/blocks/picker">Assignees — Select</a></li><li><a href="/blocks/checklist">Checklist — Press</a></li><li><a href="/blocks/carousel">Carousel — Swipe</a></li><li><a href="/blocks/palette">Palette — Press</a></li><li><a href="/blocks/aspect">Aspect ratio — Select</a></li><li><a href="/blocks/tilt">Tilt card — Hover</a></li><li><a href="/blocks/sound">Now playing — Press</a></li><li><a href="/blocks/drag-ball">Dragging ball — Drag</a></li><li><a href="/blocks/seek">Search — Press</a></li><li><a href="/blocks/pull">Pull to refresh — Drag</a></li><li><a href="/blocks/escape">Escape button — Hover</a></li><li><a href="/blocks/slosh">Slosh slider — Slide</a></li><li><a href="/blocks/liq-create">Create menu — Press</a></li><li><a href="/blocks/liq-arrange">Reorder list — Drag</a></li><li><a href="/blocks/toolbar">Canvas toolbar — Select</a></li><li><a href="/blocks/radial">Radial menu — Press</a></li><li><a href="/blocks/stepper">Drag stepper — Press</a></li><li><a href="/blocks/confirm">Inline confirm — Press</a></li><li><a href="/blocks/toasts">Notify — Press</a></li><li><a href="/blocks/icon-bar">Icon bar — Select</a></li><li><a href="/blocks/dock">Magnifying dock — Hover</a></li><li><a href="/blocks/progress">Progress ticks — Hover</a></li><li><a href="/blocks/humidity">Wheel — Drag</a></li><li><a href="/blocks/command">Command bar — Type</a></li><li><a href="/blocks/roster">Selection list — Select</a></li><li><a href="/blocks/sleep">Range dial — Drag</a></li><li><a href="/blocks/liq-toggle">Liquid toggle — Press</a></li></ul><nav><a href="/">Blocks</a> <a href="/sounds">Sounds</a> <a href="/finds">Finds</a> <a href="/bench">Bench</a></nav></main></noscript>
+    <div id="root"></div>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+/* The source markup reproduces the original document shell, including
+ * fixed sidebar and dock. Keep the root transparent to its layout. */
+#root {
+  display: contents;
+}
+
+aside {
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Visible keyboard focus even when a snapshot's CSS resets outlines. */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  aside {
+    transition-duration: 0.01ms !important;
+  }
+}

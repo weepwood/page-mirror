@@ -18,12 +18,21 @@ https://weepwood.github.io/page-mirror/
 - .github/workflows/sync-mirrors.yml：首次同步及可选人工重新导入。
 - .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布。
 
-## 首批迁移
+## 首批迁移（自动导入，仅限公开源）
 
 - mimo-mirror → sites/mimo-rl/（静态站点）
 - inftab-mirror → sites/inftab-app/（Vue 3 / Vite）
 
-这两个源仓库目前公开。其余私有 *-mirror 项目暂不自动导入公开 page-mirror，避免在未经审核的情况下公开私有源码和媒体素材。原有 holo、artcraft-apps、inftab、weread 项目继续存在。
+自动导入只接受公开仓库，配置在 sites/mirror-sources.json。原有 holo、artcraft-apps、inftab、weread 项目继续存在。
+
+## 一次性批量导入（2026-11-08）
+
+经明确确认后，另外 17 个原私有镜像仓库已一次性迁入本公开仓库，站点清单共 23 个。15 个为纯静态镜像，planes-react-clone 与 zhheo-blog-clone 先在本地构建为静态产物再迁入，完整源码保存在各自的 `reference/source/`（不会发布到 Pages）。
+
+- 每个导入目录含 `MIRROR-IMPORT.json`，记录来源仓库、分支、原提交 SHA 与导入日期。
+- 所有新站点状态为 `review`，尚未完成逐屏对照验收。
+- 这批仓库**不登记**到 `sites/mirror-sources.json`，因此自动导入 Action 不会重复克隆，也不会放宽「私有源禁止自动导入」的边界。
+- 迁入后源码与第三方站点素材已随公开仓库及 GitHub Pages 对外可见；上游字体、图片、商标与交互代码的许可仍需逐站核对，详见 [镜像迁移说明](docs/mirror-import.md)。
 
 ## 添加新镜像
 

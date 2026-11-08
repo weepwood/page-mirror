@@ -1,0 +1,1 @@
+const o={monthly:{amount:20,label:"$20",period:"/mo"},annual:{amount:120,label:"$120",period:"/yr",perMonth:10,perMonthLabel:"$10"},lifetime:{amount:299,label:"$299"},bolt:{off:100,offLabel:"$100 off",amount:199,label:"$199"},core:{amount:59,label:"$59",period:"/yr"}};export{o as P};

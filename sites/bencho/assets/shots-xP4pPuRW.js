@@ -1,0 +1,1 @@
+var e=[{name:`bird`,src:`/lab/shot-bird.jpg`},{name:`cow`,src:`/lab/shot-cow.jpg`},{name:`house`,src:`/lab/shot-house.jpg`},{name:`man`,src:`/lab/shot-man.jpg`},{name:`queue`,src:`/lab/shot-queue.jpg`}];export{e as t};

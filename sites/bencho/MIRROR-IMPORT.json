@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/bencho-mirror",
+  "branch": "main",
+  "commit": "6219a5d70627195ee88fbbcc22997becb4f4c764",
+  "importedAt": "2026-10-24",
+  "kind": "static",
+  "note": "一次性本地导入；原仓库为私有，迁入公开的 page-mirror 后由本仓库维护。"
+}

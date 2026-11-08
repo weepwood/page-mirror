@@ -1,0 +1,10 @@
+[build]
+  command = "echo 'skip'"
+  publish = "."
+
+# SPA fallback: unknown paths serve index.html.
+# Existing files under /data/_build/... are still served directly.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

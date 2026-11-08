@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/icon-museum-mirror",
+  "branch": "main",
+  "commit": "2a5c3993cf622230731dba4e669381aefe975f95",
+  "importedAt": "2026-07-10",
+  "kind": "static",
+  "note": "一次性本地导入；原仓库为私有，迁入公开的 page-mirror 后由本仓库维护。"
+}

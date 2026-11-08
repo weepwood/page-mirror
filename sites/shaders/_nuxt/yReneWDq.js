@@ -1,0 +1,1 @@
+import{d as n,b as o,i as t,j as a,o as s}from"./7cVyfpow.js";const i=n({__name:"index",setup(l){return o({title:"Marketing Sandbox — Dev Only",meta:[{name:"robots",content:"noindex, nofollow"}]}),(r,e)=>(s(),t("div",null,[...e[0]||(e[0]=[a("div",{class:"h-28 lg:h-32"},null,-1)])]))}});export{i as default};

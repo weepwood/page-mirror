@@ -1,0 +1,1 @@
+.browse-shimmer[data-v-c62a12b0]{background:linear-gradient(110deg,#18181b 30%,#222228,#18181b 70%);background-size:250% 100%;animation:browseShimmer-c62a12b0 2s ease-in-out infinite}@keyframes browseShimmer-c62a12b0{0%{background-position:200% 0}to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.browse-shimmer[data-v-c62a12b0]{animation:none}}

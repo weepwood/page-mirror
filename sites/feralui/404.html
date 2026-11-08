@@ -1,0 +1,10 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><script>
+(function () {
+  var l = window.location;
+  var parts = l.pathname.split('/').filter(Boolean);
+  var base = /github\.io$/i.test(l.hostname) && parts.length ? '/' + parts[0] : '';
+  sessionStorage.setItem('feralui-path', l.pathname + l.search + l.hash);
+  l.replace(base + '/');
+})();
+</script></head><body></body></html>

@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/google-homepage-mirror",
+  "branch": "master",
+  "commit": "bb37eb2ed87215d3af6a19f422f46a660b9bcd18",
+  "importedAt": "2026-07-10",
+  "kind": "static",
+  "note": "一次性本地导入；原仓库为私有，迁入公开的 page-mirror 后由本仓库维护。"
+}

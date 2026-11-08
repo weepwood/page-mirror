@@ -1,0 +1,9 @@
+[build]
+  command = "echo 'skip'"
+  publish = "."
+
+# GLB models must be served with the correct MIME type for WebGL loaders
+[[headers]]
+  for = "/assets/**/*.glb"
+  [headers.values]
+    Content-Type = "model/gltf-binary"

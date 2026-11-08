@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/planes-react-clone",
+  "branch": "master",
+  "commit": "66a545e006b1901490ed1e47a81c2cbce182a270",
+  "importedAt": "2026-10-25",
+  "kind": "static-build",
+  "note": "源码型项目：本地构建后迁入静态产物至站点根目录，原始源码保存在 reference/source/。一次性本地导入。"
+}

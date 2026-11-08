@@ -1,0 +1,1 @@
+import{nt as e}from"./useOverscrollGround-DDwJDorI.js";var t=e(),n=`(prefers-reduced-motion: reduce)`;function r(e){let t=window.matchMedia(n);return t.addEventListener(`change`,e),()=>t.removeEventListener(`change`,e)}function i(){return(0,t.useSyncExternalStore)(r,()=>window.matchMedia(n).matches,()=>!1)}export{i as t};

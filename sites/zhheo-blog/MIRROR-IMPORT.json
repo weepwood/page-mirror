@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/zhheo-blog-clone",
+  "branch": "main",
+  "commit": "6fd7d7b04dc7ae83063ae3067a1d357aaf3423f0",
+  "importedAt": "2026-08-04",
+  "kind": "static-build",
+  "note": "源码型项目：本地构建后迁入静态产物至站点根目录，原始源码保存在 reference/source/。一次性本地导入。"
+}

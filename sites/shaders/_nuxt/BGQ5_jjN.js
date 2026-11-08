@@ -1,0 +1,1 @@
+import{d as a,w as n,i as o,G as r,o as s}from"./7cVyfpow.js";const l=a({__name:"[slug]",async setup(c){let e,t;return[e,t]=n(()=>r("/pro#pricing",{replace:!0})),await e,t(),(_,p)=>(s(),o("div"))}});export{l as default};

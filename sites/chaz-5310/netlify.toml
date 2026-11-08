@@ -1,0 +1,10 @@
+[build]
+  command = "echo 'no build - static mirror'"
+  publish = "."
+
+# SPA 回退：真实存在的文件（/assets/*, /draco/* 等）优先直接返回，
+# 其余路径（如 /phone/5310/）回退到 index.html 由前端路由处理
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

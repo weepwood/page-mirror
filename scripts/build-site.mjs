@@ -1,6 +1,6 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { loadSources, root } from './mirror-config.mjs';
 
 const out = resolve(root, '.site-build');
@@ -17,6 +17,14 @@ function allowed(from, current) {
 }
 function copyStatic(source, dest) {
   cpSync(source, dest, { recursive: true, filter: path => allowed(source, path) });
+}
+// Windows resolves npm through npm.cmd, which execFileSync cannot spawn directly.
+function runNpm(args, cwd) {
+  if (process.platform === 'win32') {
+    execSync(['npm', ...args].join(' '), { cwd, stdio: 'inherit', shell: true });
+  } else {
+    execFileSync('npm', args, { cwd, stdio: 'inherit' });
+  }
 }
 function rewriteLocalAssetUrls(siteRoot) {
   function visit(dir) {
@@ -61,8 +69,8 @@ for (const site of registry.sites) {
   const dest = join(out, 'sites', site.slug);
   const source = sources.get(site.slug);
   if (source?.kind === 'vite') {
-    execFileSync('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: path, stdio: 'inherit' });
-    execFileSync('npm', ['run', 'build'], { cwd: path, stdio: 'inherit' });
+    runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], path);
+    runNpm(['run', 'build'], path);
     if (!existsSync(join(path, 'dist/index.html'))) throw new Error('Vite 产物缺少 index.html：' + site.slug);
     cpSync(join(path, 'dist'), dest, { recursive: true });
   } else {

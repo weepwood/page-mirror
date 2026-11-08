@@ -1,0 +1,497 @@
+{
+  "ai": {
+    "title": "AI Chat and Agent UI Components for React",
+    "description": "Interface pieces for chat and agent products. The set covers the whole conversation: a composer with a model picker, a message that streams in, a collapsible reasoning trace, cards for tool calls and approvals, a plan that fills as steps complete, and an assembled chat that ties them together.",
+    "faq": [
+      {
+        "question": "Do the AI components work with the Vercel AI SDK or my own streaming endpoint?",
+        "answer": "Either. They take plain props (messages, a streaming string, tool-call state) and do not import any AI SDK, so you wire them to the Vercel AI SDK, LangChain, or a hand-rolled fetch stream."
+      },
+      {
+        "question": "How do I install the components in AI?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in AI free?",
+        "answer": "1 of the 12 are free. The rest need a one-time Planes Pro license, which covers every component and future additions."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "ai-prompt-composer",
+      "streaming-message",
+      "reasoning-trace",
+      "image-generation",
+      "tool-call-card",
+      "agent-plan",
+      "ai-chat",
+      "inline-diff",
+      "approval-card",
+      "chat-orb",
+      "pixel-image-generation"
+    ]
+  },
+  "webgl": {
+    "title": "WebGL Shader Backgrounds for React",
+    "description": "Full-viewport backdrops, each a single React component with no Three.js dependency, all but one rendered in a fragment shader (Beams is pure CSS). Light effects like a logo flare and a prism, fluid and smoke simulations, embers and streaks, a cloud deck seen from altitude, and a ray-marched torus quantized into terminal glyphs.",
+    "faq": [
+      {
+        "question": "Will the WebGL backgrounds slow the page down?",
+        "answer": "The shader backdrops render on the GPU in a single full-screen quad, pause when off screen or hidden, cap pixel density on all but Ink, and fall back to a plain background when WebGL is unavailable or reduced motion is set. Beams is pure CSS with no canvas at all."
+      },
+      {
+        "question": "How do I install the components in WebGL?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in WebGL free?",
+        "answer": "They are part of Planes Pro, a one-time license that covers every component and future additions. The catalog also has free components in other categories."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "logo-flare",
+      "prism",
+      "wind-tunnel",
+      "cloud-sea",
+      "ink",
+      "slipstream",
+      "embers",
+      "beams",
+      "ascii-webgl",
+      "dither-field",
+      "ferrofluid",
+      "cymatics",
+      "caustics",
+      "thin-film",
+      "topography",
+      "jali",
+      "galaxy",
+      "eclipse",
+      "streaks",
+      "magma",
+      "warp"
+    ]
+  },
+  "media": {
+    "title": "Media and Card Components for React",
+    "description": "Cards, galleries, players, and hover effects. Photo stacks and lightboxes for imagery, a curved video player and music cards for playback, clocks and contribution charts for data, plus flip, reveal, and expand interactions for feature grids.",
+    "faq": [
+      {
+        "question": "Do the cards and galleries need an image CDN or a specific loader?",
+        "answer": "No. They take plain src strings and render standard img elements, so any URL or CDN works; the lightboxes and stacks handle layout and motion only."
+      },
+      {
+        "question": "How do I install the components in Media?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Media free?",
+        "answer": "They are part of Planes Pro, a one-time license that covers every component and future additions. The catalog also has free components in other categories."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "link-preview",
+      "radial-pop-out",
+      "direction-aware-flip-card",
+      "hover-reveal",
+      "photo-stack",
+      "hero-card-stack",
+      "swipe-card-deck",
+      "photo-shuffle",
+      "retro-music-player",
+      "album-cover",
+      "apple-music-card",
+      "watch-face",
+      "digital-watch-face",
+      "avatar-cluster",
+      "photo-lightbox",
+      "scroll-zoom-reveal",
+      "github-chart",
+      "dither-renderer",
+      "progressive-blur",
+      "hero-media-scroll-out",
+      "bento-grid",
+      "shutter-gallery",
+      "photo-planes",
+      "polaroid-flip-card",
+      "text-cylinder",
+      "expanding-card",
+      "curved-video-player",
+      "scroll-settle-gallery"
+    ]
+  },
+  "controls": {
+    "title": "Animated React Controls: Pickers, Inputs, and Menus",
+    "description": "Inputs and menus that respond physically. A date picker and a searchable select, a number stepper with rolling digits, a one-time-code input, segmented tabs with a stretching pill, a nested command palette, an iOS-style bottom sheet with detents, a rotary knob, and a few playful pieces like a receipt printer and an elastic drag-select.",
+    "faq": [
+      {
+        "question": "Are the controls accessible form inputs?",
+        "answer": "The form controls are. The date picker, select, number stepper, OTP input, segmented control, command palette and knob are keyboard-operable with matching ARIA roles (grid, combobox, spinbutton, tablist, slider), built on native inputs where one exists, with the animation layered on top. Playful pieces like the receipt printer and scratch card are visual, not inputs."
+      },
+      {
+        "question": "How do I install the components in Controls?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Controls free?",
+        "answer": "3 of the 24 are free. The rest need a one-time Planes Pro license, which covers every component and future additions."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "copy-button",
+      "glow-input",
+      "email-capture",
+      "card-stack",
+      "animated-date-picker",
+      "animated-select",
+      "command-palette",
+      "detent-drawer",
+      "notch",
+      "physical-knob",
+      "reaction-arc",
+      "receipt-printer",
+      "rubber-band-select",
+      "morphing-tray",
+      "keyboard",
+      "infinity-canvas",
+      "scratch-card",
+      "multi-select",
+      "file-dropzone",
+      "halftone-popover",
+      "cookie-consent"
+    ]
+  },
+  "carousels": {
+    "title": "Animated React Carousel Components",
+    "description": "Ways to move a row of content past the viewer. A 3D cover flow you can drag or scroll, a cylinder and an arc that curve the row, a wheel that blurs everything but the frame in focus, a gallery that stretches the hovered frame, a parallax marquee, a velocity-driven marquee, and a logo wall that cycles cell by cell.",
+    "faq": [
+      {
+        "question": "Do the carousels support touch, keyboard and reduced motion?",
+        "answer": "Drag and swipe on touch, arrow keys on the carousels that have a focused frame (Cover Flow, Image Wheel, Focus Scale, Elastic), and every one respects prefers-reduced-motion by removing the non-essential motion."
+      },
+      {
+        "question": "How do I install the components in Carousels?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Carousels free?",
+        "answer": "1 of the 11 are free. The rest need a one-time Planes Pro license, which covers every component and future additions."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "logo-wall",
+      "marquee",
+      "image-wheel",
+      "image-flow-carousel",
+      "arc-marquee",
+      "parallax-carousel",
+      "bend-carousel",
+      "elastic-carousel",
+      "focus-scale-carousel",
+      "lens-carousel"
+    ]
+  },
+  "physics": {
+    "title": "Physics-Based React Animation Components",
+    "description": "Motion that comes from simulation rather than keyframes. Pendulums that drift in and out of phase, wavefronts spreading across a grid, particles converging into text, a Rubik's cube you can twist, and dot fields that scatter from the cursor and snap back.",
+    "faq": [
+      {
+        "question": "How are the physics simulated?",
+        "answer": "With Motion springs and small hand-written simulations in requestAnimationFrame. There is no physics engine dependency, and every piece respects prefers-reduced-motion."
+      },
+      {
+        "question": "How do I install the components in Physics?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Physics free?",
+        "answer": "2 of the 6 are free. The rest need a one-time Planes Pro license, which covers every component and future additions."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "particle-reveal",
+      "rubiks-cube",
+      "dotted-sphere",
+      "dot-monogram"
+    ]
+  },
+  "text": {
+    "title": "Animated Text Effects for React",
+    "description": "Eight ways to animate type. A split-flap board that flips through characters mechanically, a stagger that resolves new text glyph by glyph on hover, a film-title reveal where each word settles out of a blur, a headline filled with flowing liquid, a signature drawn stroke by stroke, a rainbow band that sweeps across a line, neon tubing that strikes on letter by letter, and an odometer where only the digits that change roll.",
+    "faq": [
+      {
+        "question": "Do the text effects hurt SEO or screen readers?",
+        "answer": "No. The real text stays in the DOM as plain characters or with an accessible label, so search engines and screen readers read the words while the animation runs on top."
+      },
+      {
+        "question": "How do I install the components in Text?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Text free?",
+        "answer": "2 of the 9 are free. The rest need a one-time Planes Pro license, which covers every component and future additions."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "split-flap-board",
+      "liquid-headline",
+      "signature-reveal",
+      "rainbow-text",
+      "neon-sign",
+      "glitch-reveal",
+      "odometer"
+    ]
+  },
+  "sections": {
+    "title": "Animated Landing Page Sections for React",
+    "description": "Larger blocks for marketing and product pages. A pricing table whose prices roll on toggle, an FAQ accordion, integration beams and hub diagrams, a dotted world map and globe, a radar, a live activity feed, a mega menu that reshapes per panel, and a pinned scroll stage that hands its children progress.",
+    "faq": [
+      {
+        "question": "Can I use a section as a full page?",
+        "answer": "Yes. Each section is a self-contained block with its own layout, so you compose a landing page from several or drop one into an existing page."
+      },
+      {
+        "question": "How do I install the components in Sections?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Sections free?",
+        "answer": "1 of the 32 are free. The rest need a one-time Planes Pro license, which covers every component and future additions."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "shader-nav",
+      "shader-strip",
+      "shader-rows",
+      "shader-index",
+      "shader-flood",
+      "hover-tabs",
+      "silk-card",
+      "pricing-table",
+      "mega-menu",
+      "faq-section",
+      "integration-beams",
+      "radial-hub-diagram",
+      "shader-tabs",
+      "world-map",
+      "dotted-globe",
+      "activity-feed",
+      "radar-sweep",
+      "data-table",
+      "integration-grid",
+      "pricing-section",
+      "testimonial-wall",
+      "changelog-timeline",
+      "cta-section",
+      "logo-testimonials",
+      "navbar",
+      "announcement-bar",
+      "logo-cloud",
+      "features-grid",
+      "team-section",
+      "blog-section",
+      "contact-section"
+    ]
+  },
+  "charts": {
+    "title": "Animated Chart Components for React",
+    "description": "Charts built by hand in SVG and canvas, filled with the same liquid and dither shaders as the rest of the catalog. An area chart and bars whose ink flows, a multi-series line chart, a streamgraph of stacked shader bands, a donut, pie, gauge, heatmap and ranked bar list rendered as halftone print, and a row of stat tiles with sparklines. Each one has hover detail, keyboard access, and a screen-reader description of the data.",
+    "faq": [
+      {
+        "question": "Do the charts need a charting library?",
+        "answer": "No. They are drawn by hand in SVG and canvas with the dither and shader fills, take plain arrays as data, and come with hover detail, keyboard access and a screen-reader description of the data."
+      },
+      {
+        "question": "How do I install the components in Charts?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Charts free?",
+        "answer": "They are part of Planes Pro, a one-time license that covers every component and future additions. The catalog also has free components in other categories."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "shader-area",
+      "shader-bars",
+      "shader-stream",
+      "dither-donut",
+      "dither-heatmap",
+      "shader-stat-tiles",
+      "dither-bar-list",
+      "dither-gauge",
+      "dither-line-chart",
+      "dither-pie"
+    ]
+  },
+  "heroes": {
+    "title": "Animated Hero Sections for React",
+    "description": "Full-screen openers for landing pages. Photo cards floating in 3D depth, a ring of cards you can spin with a drag, plus editorial, scenic and landing layouts. Each one ships its own headline, buttons and copy props, and works in light and dark mode.",
+    "faq": [
+      {
+        "question": "Can I swap the images and copy in a hero?",
+        "answer": "Yes. Headline, supporting line, buttons and images are all props, so you replace the defaults without touching the layout or the motion."
+      },
+      {
+        "question": "How do I install the components in Heroes?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Heroes free?",
+        "answer": "They are part of Planes Pro, a one-time license that covers every component and future additions. The catalog also has free components in other categories."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "scenic-hero",
+      "editorial-hero",
+      "landing-hero",
+      "floating-cards-hero",
+      "orbit-hero",
+      "gallery-wall-hero",
+      "sdk-hero",
+      "trail-hero",
+      "type-hero",
+      "desk-hero"
+    ]
+  },
+  "logins": {
+    "title": "Animated Login Pages for React",
+    "description": "Sign-in screens with some character. A login that runs like a terminal session, a portal scene, and a plain auth form for sign in and sign up. The fields, labels and submit handlers are props, so they wire into any auth provider.",
+    "faq": [
+      {
+        "question": "Do the login pages handle authentication?",
+        "answer": "No. They are the interface only: you pass a submit handler and wire it to your own auth, such as NextAuth, Clerk, Supabase or a custom endpoint."
+      },
+      {
+        "question": "How do I install the components in Logins?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Logins free?",
+        "answer": "They are part of Planes Pro, a one-time license that covers every component and future additions. The catalog also has free components in other categories."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "portal-login",
+      "terminal-login",
+      "auth-form"
+    ]
+  },
+  "footers": {
+    "title": "Animated Footers for React",
+    "description": "The last block on the page. A footer built around an oversized wordmark, one with a halftone image effect, and a simple footer with link columns. Links, columns and the wordmark are props.",
+    "faq": [
+      {
+        "question": "Can I use my own logo or wordmark in the footer?",
+        "answer": "Yes. The wordmark text and links are props, so the footer carries your brand without editing the component."
+      },
+      {
+        "question": "How do I install the components in Footers?",
+        "answer": "With the shadcn CLI. Each component page lists its exact command: free components install from a public URL (npx shadcn add https://useplanes.com/r/<name>.json), Pro components install by name (npx shadcn add @useplanes/<name>) after npx @useplanes/cli init --key <key>."
+      },
+      {
+        "question": "Do they work with Next.js App Router and Tailwind CSS v4?",
+        "answer": "Yes. Every component is a React 19 client component styled with Tailwind CSS v4, and works in Next.js App Router, Vite, or any React app with Tailwind CSS v4."
+      },
+      {
+        "question": "Are the components in Footers free?",
+        "answer": "They are part of Planes Pro, a one-time license that covers every component and future additions. The catalog also has free components in other categories."
+      },
+      {
+        "question": "What do they depend on?",
+        "answer": "Motion (formerly Framer Motion) is the only runtime animation dependency. The CLI writes the .tsx source into your project, so there is no Planes package to keep updated."
+      }
+    ],
+    "pro": [
+      "wordmark-footer",
+      "halftone-footer",
+      "cta-footer"
+    ]
+  }
+}

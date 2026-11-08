@@ -2,6 +2,17 @@
   "schemaVersion": 1,
   "sites": [
     {
+      "slug": "arc-crm",
+      "name": "Arc CRM — 静态镜像",
+      "sourceUrl": "https://uiarc.dev/",
+      "description": "uiarc.dev Arc CRM 在线预览的自包含静态镜像（Next 资源）。",
+      "status": "review",
+      "previewPath": "sites/arc-crm/",
+      "readme": "sites/arc-crm/README.md",
+      "updatedAt": "2026-10-24",
+      "sourceRepository": "weepwood/arc-crm-mirror"
+    },
+    {
       "slug": "artcraft-apps",
       "name": "ArtCraft — Crafting Apps",
       "sourceUrl": "https://getartcraft.com/apps",
@@ -12,6 +23,72 @@
       "updatedAt": "2026-10-09"
     },
     {
+      "slug": "bencho",
+      "name": "Bencho — 静态镜像",
+      "sourceUrl": "https://bencho.dev/",
+      "description": "bencho.dev 的 Vite/React 构建产物静态镜像，仅前端；后端 /api 与 Supabase 不在镜内。",
+      "status": "review",
+      "previewPath": "sites/bencho/",
+      "readme": "sites/bencho/README.md",
+      "updatedAt": "2026-10-24",
+      "sourceRepository": "weepwood/bencho-mirror"
+    },
+    {
+      "slug": "ccunpacked",
+      "name": "Claude Code Unpacked — 静态复刻",
+      "sourceUrl": "https://ccunpacked.dev/",
+      "description": "Claude Code Unpacked (ccunpacked.dev) 1:1 静态复刻（Astro 产物）。",
+      "status": "review",
+      "previewPath": "sites/ccunpacked/",
+      "readme": "sites/ccunpacked/README.md",
+      "updatedAt": "2026-07-09",
+      "sourceRepository": "weepwood/ccunpacked-replica"
+    },
+    {
+      "slug": "chaz-5310",
+      "name": "Nokia 5310 — 3D 体验站镜像",
+      "sourceUrl": "https://chaz.fun/phone/5310/",
+      "description": "Nokia 5310 XpressMusic 3D 体验站 1:1 镜像，含 draco 压缩模型资源。",
+      "status": "review",
+      "previewPath": "sites/chaz-5310/",
+      "readme": "sites/chaz-5310/README.md",
+      "updatedAt": "2026-07-09",
+      "sourceRepository": "weepwood/chaz-5310-mirror"
+    },
+    {
+      "slug": "feralui",
+      "name": "FeralUI — 交互体验复刻",
+      "sourceUrl": "https://feralui.dev/",
+      "description": "feralui.dev 交互体验独立静态复刻，含 12 个动效与交互路由。",
+      "status": "review",
+      "previewPath": "sites/feralui/",
+      "readme": "sites/feralui/README.md",
+      "updatedAt": "2026-07-16",
+      "sourceRepository": "weepwood/feralui"
+    },
+    {
+      "slug": "firewood",
+      "name": "Firewood — Three.js 交互镜像",
+      "sourceUrl": "https://screen.toys/firewood/",
+      "description": "screen.toys/firewood 劈柴 Three.js 交互体验 1:1 镜像。",
+      "status": "review",
+      "previewPath": "sites/firewood/",
+      "readme": "sites/firewood/README.md",
+      "updatedAt": "2026-07-09",
+      "sourceRepository": "weepwood/firewood-mirror"
+    },
+    {
+      "slug": "google-homepage",
+      "name": "Google 首页 — 静态镜像",
+      "sourceUrl": "https://www.google.com/",
+      "description": "Google 首页像素级静态镜像；搜索框跳转至真实 Google。",
+      "status": "review",
+      "previewPath": "sites/google-homepage/",
+      "readme": "sites/google-homepage/README.md",
+      "updatedAt": "2026-07-10",
+      "sourceRepository": "weepwood/google-homepage-mirror"
+    },
+    {
       "slug": "holo",
       "name": "Holo — AI Marketing",
       "sourceUrl": "https://holo.ui8.dev/",
@@ -20,6 +97,17 @@
       "previewPath": "sites/holo/",
       "readme": "sites/holo/README.md",
       "updatedAt": "2026-10-09"
+    },
+    {
+      "slug": "icon-museum",
+      "name": "Icon Museum — 图标图库镜像",
+      "sourceUrl": "https://icon.museum/",
+      "description": "icon.museum 应用图标精选图库 1:1 静态镜像。",
+      "status": "review",
+      "previewPath": "sites/icon-museum/",
+      "readme": "sites/icon-museum/README.md",
+      "updatedAt": "2026-07-10",
+      "sourceRepository": "weepwood/icon-museum-mirror"
     },
     {
       "slug": "inftab",
@@ -43,6 +131,17 @@
       "sourceRepository": "weepwood/inftab-mirror"
     },
     {
+      "slug": "makemepulse-2019",
+      "name": "MakeMePulse 2019 — WebGL 镜像",
+      "sourceUrl": "https://2019.makemepulse.com/",
+      "description": "makemepulse 2019 \"Nomadic Tribe\" 交互式 WebGL 站点静态镜像（体量最大）。",
+      "status": "review",
+      "previewPath": "sites/makemepulse-2019/",
+      "readme": "sites/makemepulse-2019/README.md",
+      "updatedAt": "2026-07-09",
+      "sourceRepository": "weepwood/makemepulse-2019-mirror"
+    },
+    {
       "slug": "mimo-rl",
       "name": "MiMo RL · 原站静态镜像",
       "sourceUrl": "https://mimo.xiaomi.com/rl/",
@@ -54,6 +153,72 @@
       "sourceRepository": "weepwood/mimo-mirror"
     },
     {
+      "slug": "opencode-data",
+      "name": "OpenCode Data — 数据页镜像",
+      "sourceUrl": "https://opencode.ai/zh/data",
+      "description": "opencode.ai/zh/data 数据页静态快照 1:1 镜像。",
+      "status": "review",
+      "previewPath": "sites/opencode-data/",
+      "readme": "sites/opencode-data/README.md",
+      "updatedAt": "2026-07-09",
+      "sourceRepository": "weepwood/opencode-data-mirror"
+    },
+    {
+      "slug": "outlier-portfolio",
+      "name": "Outlier — 投资组合单页复刻",
+      "sourceUrl": "https://louis-outlier-table.vercel.app/",
+      "description": "Outlier 投资组合管理单页应用 1:1 复刻，单文件零依赖并含性能与功能补全。",
+      "status": "review",
+      "previewPath": "sites/outlier-portfolio/",
+      "readme": "sites/outlier-portfolio/README.md",
+      "updatedAt": "2026-10-24",
+      "sourceRepository": "weepwood/outlier-portfolio"
+    },
+    {
+      "slug": "planes-react",
+      "name": "Planes — 文档站复刻",
+      "sourceUrl": "https://useplanes.com/",
+      "description": "useplanes.com 文档站的 React (Vite) 复刻，本地构建后以相对路径静态产物发布。",
+      "status": "review",
+      "previewPath": "sites/planes-react/",
+      "readme": "sites/planes-react/README.md",
+      "updatedAt": "2026-10-25",
+      "sourceRepository": "weepwood/planes-react-clone"
+    },
+    {
+      "slug": "pnpm-io",
+      "name": "pnpm.io — 首页镜像",
+      "sourceUrl": "https://pnpm.io/",
+      "description": "pnpm.io 首页 1:1 静态镜像，含 Vite SPA 构建产物与图片资源。",
+      "status": "review",
+      "previewPath": "sites/pnpm-io/",
+      "readme": "sites/pnpm-io/README.md",
+      "updatedAt": "2026-10-09",
+      "sourceRepository": "weepwood/pnpm-io-mirror"
+    },
+    {
+      "slug": "railcode",
+      "name": "Railcode — 静态镜像",
+      "sourceUrl": "https://railcode.dev/",
+      "description": "railcode.dev 的 Vite/React SPA 静态镜像与本地静态服务。",
+      "status": "review",
+      "previewPath": "sites/railcode/",
+      "readme": "sites/railcode/README.md",
+      "updatedAt": "2026-10-20",
+      "sourceRepository": "weepwood/railcode-mirror"
+    },
+    {
+      "slug": "shaders",
+      "name": "Shaders — WebGPU 组件站镜像",
+      "sourceUrl": "https://shaders.com/",
+      "description": "shaders.com WebGPU shader 组件站 1:1 静态镜像，含本地化资源与原站 Nuxt 资源。",
+      "status": "review",
+      "previewPath": "sites/shaders/",
+      "readme": "sites/shaders/README.md",
+      "updatedAt": "2026-10-24",
+      "sourceRepository": "weepwood/shaders-mirror"
+    },
+    {
       "slug": "weread",
       "name": "微信读书 WeRead",
       "sourceUrl": "https://weread.qq.com/",
@@ -62,6 +227,28 @@
       "previewPath": "sites/weread/",
       "readme": "sites/weread/README.md",
       "updatedAt": "2026-10-11"
+    },
+    {
+      "slug": "zcode-website",
+      "name": "ZCode 官网 — 静态复刻",
+      "sourceUrl": "https://zcode.z.ai/cn",
+      "description": "ZCode 官网 (zcode.z.ai/cn) 1:1 复刻，纯 HTML/CSS/JS 静态实现。",
+      "status": "review",
+      "previewPath": "sites/zcode-website/",
+      "readme": "sites/zcode-website/README.md",
+      "updatedAt": "2026-10-24",
+      "sourceRepository": "weepwood/zcode-website-clone"
+    },
+    {
+      "slug": "zhheo-blog",
+      "name": "Zhheo Blog — 首页复刻",
+      "sourceUrl": "https://blog.zhheo.com/",
+      "description": "blog.zhheo.com 首页的 Next.js 16 / Tailwind v4 / shadcn-ui 复刻，静态导出产物发布。",
+      "status": "review",
+      "previewPath": "sites/zhheo-blog/",
+      "readme": "sites/zhheo-blog/README.md",
+      "updatedAt": "2026-08-04",
+      "sourceRepository": "weepwood/zhheo-blog-clone"
     }
   ]
 }

@@ -1,0 +1,1 @@
+import{d as o,g as a,v as n,f3 as s,o as _,L as c}from"./7cVyfpow.js";const m=o({__name:"docs",setup(p){return(t,r)=>{const e=s;return _(),a(e,{name:"app"},{default:n(()=>[c(t.$slots,"default")]),_:3})}}});export{m as default};

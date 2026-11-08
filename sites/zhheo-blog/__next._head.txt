@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[97367,["/page-mirror/sites/zhheo-blog/_next/static/chunks/3rjus8yyo0nuv.js","/page-mirror/sites/zhheo-blog/_next/static/chunks/14mrh2-p_w84d.js"],"ViewportBoundary"]
+3:I[97367,["/page-mirror/sites/zhheo-blog/_next/static/chunks/3rjus8yyo0nuv.js","/page-mirror/sites/zhheo-blog/_next/static/chunks/14mrh2-p_w84d.js"],"MetadataBoundary"]
+4:"$Sreact.suspense"
+5:I[27201,["/page-mirror/sites/zhheo-blog/_next/static/chunks/3rjus8yyo0nuv.js","/page-mirror/sites/zhheo-blog/_next/static/chunks/14mrh2-p_w84d.js"],"IconMark"]
+0:{"rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}],["$","meta","2",{"name":"theme-color","content":"#f7f9fe"}]]}],["$","div",null,{"hidden":true,"children":["$","$L3",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"张洪Heo - 分享设计与科技生活"}],["$","meta","1",{"name":"description","content":"张洪Heo的个人博客，分享设计与科技生活，专注前端开发、设计灵感与效率工具。"}],["$","link","2",{"rel":"icon","href":"/page-mirror/sites/zhheo-blog/favicon.ico?favicon.2vob68tjqpejf.ico","sizes":"256x256","type":"image/x-icon"}],["$","$L5","3",{}]]}]}]}],null]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"9UjIl6Gz4ojOc9GUx1y76"}

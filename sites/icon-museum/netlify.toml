@@ -1,0 +1,9 @@
+[build]
+  command = "echo 'skip'"
+  publish = "."
+
+# SPA fallback: client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

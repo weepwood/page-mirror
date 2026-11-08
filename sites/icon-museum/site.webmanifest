@@ -1,0 +1,13 @@
+{
+  "name": "Icon Museum",
+  "short_name": "Icon Museum",
+  "description": "A curated collection of the finest app icons. Browse, discover, and explore beautifully crafted iOS and macOS app icons by top designers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon" }
+  ]
+}

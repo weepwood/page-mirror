@@ -1,0 +1,1 @@
+import{i as e}from"./jsx-runtime-Cx0BB4qO.js";import{t}from"./react-3BKWdGy3.js";var n=e(t(),1);function r(e){let t=(0,n.useRef)(null);return t.current===null&&(t.current=e()),t.current}var i=(0,n.createContext)({transformPagePoint:e=>e,isStatic:!1,reducedMotion:`never`});export{r as n,i as t};

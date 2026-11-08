@@ -1,0 +1,14 @@
+function initVacuum(){const tiles=[...document.querySelectorAll('.vacuum-tile')],count=document.querySelector('#selectedCount');const update=()=>count.textContent=document.querySelectorAll('.vacuum-tile.selected').length;tiles.forEach(t=>t.addEventListener('click',()=>{t.classList.toggle('selected');update()}));document.querySelector('#selectAll').addEventListener('click',()=>{const all=tiles.every(t=>t.classList.contains('selected')||t.hidden);tiles.forEach(t=>{if(!t.hidden)t.classList.toggle('selected',!all)});update()});document.querySelector('#vacuumDelete').addEventListener('click',()=>{const selected=[...document.querySelectorAll('.vacuum-tile.selected')];if(!selected.length)return toast('Select a few tiles first');selected.forEach((t,i)=>setTimeout(()=>{t.classList.add('sucked');setTimeout(()=>{t.hidden=true;update()},750)},i*90));toast(`${selected.length} objects vacuumed`)})}
+
+function initCrumple(){const note=document.querySelector('#notePaper'),btn=document.querySelector('#crumpleBtn');if(!note)return;let gone=false;btn.addEventListener('click',()=>{if(gone){note.classList.remove('crumpled');note.style.opacity='1';btn.textContent='Crumple note';gone=false}else{note.classList.add('crumpled');btn.textContent='Write another note';setTimeout(()=>note.style.opacity='0',700);gone=true}})}
+
+function initHologram(){const stage=document.querySelector('#holoStage'),card=document.querySelector('#holoCard');if(!stage)return;stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;card.style.transform=`rotateY(${x*24}deg) rotateX(${-y*20}deg)`;card.style.setProperty('--shine-x',`${x*90}%`)});stage.addEventListener('pointerleave',()=>{card.style.transform='rotateY(0) rotateX(0)'})}
+
+function initMatchday(){document.querySelectorAll('.stars').forEach(row=>row.addEventListener('click',e=>{const n=Number(e.target.dataset.star);if(!n)return;[...row.children].forEach((s,i)=>s.textContent=i<n?'★':'☆');toast(`Rated ${n} stars`)}));document.querySelector('#addMatch').addEventListener('click',()=>toast('Match composer opened in the full app'))}
+
+const initializers={'/pullcord':initPullcord,'/captcha':initCaptcha,'/gradients':initGradients,'/scenes':initScenes,'/deskfolio':initDeskfolio,'/blob':initBlob,'/animaps':initAnimaps,'/fur':initFur,'/vacuum':initVacuum,'/crumple':initCrumple,'/hologram':initHologram,'/matchday':initMatchday}
+
+function render(){const path=cleanPath();const view=routes[path]||home;app.innerHTML=`<div class="shell">${header()}${view()}</div>`;document.title=path==='/'?'FeralUI — playful, physics-driven elements':`${components.find(c=>c.path===path)?.title||'FeralUI'} · FeralUI`;bindGlobal();initializers[path]?.();scrollTo(0,0)}
+
+addEventListener('popstate',render)
+render()

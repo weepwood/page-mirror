@@ -1,0 +1,1 @@
+.collection-shimmer{background:linear-gradient(110deg,#202022 30%,#2a2a32,#202022 70%);background-size:250% 100%;animation:collectionShimmer 2s ease-in-out infinite}@keyframes collectionShimmer{0%{background-position:200% 0}to{background-position:-200% 0}}

@@ -1,0 +1,1 @@
+@keyframes accordion-down-e8b8b200{0%{height:0}to{height:var(--reka-accordion-content-height)}}@keyframes accordion-up-e8b8b200{0%{height:var(--reka-accordion-content-height)}to{height:0}}.animate-accordion-down[data-v-e8b8b200]{animation:accordion-down-e8b8b200 .2s ease-out}.animate-accordion-up[data-v-e8b8b200]{animation:accordion-up-e8b8b200 .2s ease-out}

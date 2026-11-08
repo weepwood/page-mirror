@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/pnpm-io-mirror",
+  "branch": "main",
+  "commit": "89fd19f6bf63428e27743985ab030c5cd142146f",
+  "importedAt": "2026-10-09",
+  "kind": "static",
+  "note": "一次性本地导入；原仓库为私有，迁入公开的 page-mirror 后由本仓库维护。"
+}

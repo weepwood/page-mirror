@@ -1,0 +1,1 @@
+import{X as e,Y as t}from"./useOverscrollGround-DDwJDorI.js";var n=t();function r({title:t,sub:r}){let i=e();return(0,n.jsxs)(`div`,{className:`sec-head ${i.className}`,ref:i.ref,children:[(0,n.jsx)(`h2`,{children:t}),r?(0,n.jsx)(`p`,{className:`sec-sub`,children:r}):null]})}export{r as t};

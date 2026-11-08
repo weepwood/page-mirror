@@ -13,7 +13,19 @@ page-mirror 是 **唯一长期维护的源仓库**。各站点隔离在 sites/<s
 
 导入操作在 main 分支配置更新后由 Import public mirror repositories 自动执行。它会 clone 公开源、复制二进制与文本资源、记录精确原提交 SHA、写入注册表，并提交到 page-mirror。之后 site 代码在本仓库直接维护，默认不会自动覆盖。需要重新导入时在 Actions 手动指定 refresh_slug；该操作会覆盖整个导入子目录，务必先检查本地改动。
 
-**私有源仓库不会自动迁移。** page-mirror 当前公开，导入私有资源等于公开源代码和素材。确认授权及发布范围之前，请勿将私有仓库信息填写到公开配置，也不要把访问 Token 加进脚本。需要集中管理私有镜像时，应使用独立私有仓库或经明确审查后再发布。
+**私有源仓库不会自动迁移。** page-mirror 当前公开，导入私有资源等于公开源代码和素材。请勿将私有仓库信息填写到公开配置，也不要把访问 Token 加进脚本。需要集中管理私有镜像时，应使用独立私有仓库或经明确审查后再发布。
+
+## 一次性批量导入（2026-11-08）
+
+在明确确认「接受公开」后，另有 17 个原私有镜像仓库通过**本地一次性脚本**迁入，未改动 `mirror-sources.json`、`import-mirrors.mjs` 或 CI 工作流。因此：
+
+- 自动导入通道依旧只处理公开源，上述 17 个仓库不会被 Action 重新克隆或覆盖。
+- 每个 `sites/<slug>/MIRROR-IMPORT.json` 记录来源仓库、分支、原提交 SHA 与导入日期，供追溯；`registry.json` 的 `sourceRepository` 与之对应，测试会校验一致性。
+- 15 个纯静态镜像直接以原仓库快照作为站点根；`planes-react-clone`（Vite）与 `zhheo-blog-clone`（Next.js `output: export`）先本地构建，静态产物放在站点根，完整源码放在 `reference/source/`。构建脚本会排除 `reference/`，源码不会进入 `.site-build/`。
+- Next.js 静态产物的 `basePath` / `assetPrefix` 已改为 GitHub Pages 实际子路径 `/page-mirror/sites/<slug>`，避免绝对路径在项目子路径下失效。
+- 本批站点状态一律为 `review`。公开后第三方素材与商标授权、浏览器网络检查、移动端与 404 检查仍需逐站完成，才可改为 `completed`。
+
+后续若要更新这些站点，直接修改 `sites/<slug>/`；不要改用 `--refresh`（那会按公开源重新克隆并覆盖本地改动）。
 
 ## 继续添加 mirror
 

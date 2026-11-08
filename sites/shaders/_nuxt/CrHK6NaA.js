@@ -1,0 +1,1 @@
+import{E as e,l as n}from"./7cVyfpow.js";function a(){const i=e("admin-mode",()=>!1),d=e("admin-mode-checking",()=>!1),s=e("admin-mode-checked",()=>!1);async function c(){s.value}return{isAdminMode:n(()=>i.value),isChecking:n(()=>d.value),checkAdminMode:c}}export{a as u};

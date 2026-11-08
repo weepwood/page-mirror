@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{z as t}from"./index-DTeREl5f.js";var n=e();function r(){return(0,n.jsx)(`main`,{className:`logos`,children:(0,n.jsx)(t,{size:180,rest:1200})})}export{r as default};

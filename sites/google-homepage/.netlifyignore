@@ -1,0 +1,8 @@
+# 仅部署静态站点（index.html + _m/），排除本地构建/开发脚本
+mirror.py
+server.js
+xjs_main.js
+xjs_main.css
+.netlify/
+.git/
+*.log

@@ -1,0 +1,1 @@
+var e=`/lab/butterfly.jpg`;export{e as t};

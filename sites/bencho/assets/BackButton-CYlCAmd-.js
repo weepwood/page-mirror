@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-Cx0BB4qO.js";import{Nt as t}from"./index-DTeREl5f.js";var n=e();function r(){return(0,n.jsxs)(`a`,{className:`page-back`,href:`/`,children:[(0,n.jsx)(t,{size:16,strokeWidth:2,"aria-hidden":`true`}),`Back`]})}export{r as t};

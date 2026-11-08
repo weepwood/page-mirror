@@ -1,0 +1,1 @@
+import{w as a,i as r,G as n,o}from"./7cVyfpow.js";const c={__name:"billing-portal",async setup(i){let t,e;return[t,e]=a(()=>n("/api/billing-portal",{external:!0})),await t,e(),(l,s)=>(o(),r("div"))}};export{c as default};

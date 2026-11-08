@@ -1,0 +1,2 @@
+import{_ as e}from"./s60-mbl34wLw.js";import{d as o,o as t,j as _,_ as a}from"./vendor-CpRJ2cul.js";import"./common-T6EVmSF8.js";import"./webgl-BwqbpGKL.js";const n=o({__name:"Index",setup(c){return(p,d)=>(t(),_(e,{class:"n93i"}))}}),s=a(n,[["__scopeId","data-v-fa5f76da"]]),r=Object.freeze(Object.defineProperty({__proto__:null,default:s},Symbol.toStringTag,{value:"Module"})),u=Object.assign({"./Index.vue":r});export{u as default};
+//# sourceMappingURL=index-B-SYgtLr.js.map

@@ -1,0 +1,48 @@
+/* Matchday */
+.match-stage { min-height:760px; background:#10120f; color:#eeeee8; padding:28px; }
+.match-app { max-width:1100px; margin:auto; }
+.match-nav { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2b2f29; padding-bottom:18px; }
+.match-nav strong { font-family:var(--serif);font-size:26px;font-weight:400; }
+.match-profile { width:34px;height:34px;border-radius:50%;background:#b8ca8e;display:grid;place-items:center;color:#111;font-weight:800; }
+.match-hero { padding:56px 0 36px; display:flex; justify-content:space-between; gap:24px; align-items:end; }
+.match-hero h3 { margin:0;font-size:clamp(42px,7vw,84px);line-height:.92;letter-spacing:-.065em; }
+.match-hero p { color:#888e83;max-width:380px;line-height:1.5; }
+.match-list { display:grid;gap:12px; }
+.match-row { display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:18px;border:1px solid #2c302a;border-radius:16px;padding:16px;background:#171a16; }
+.club-pair { display:flex;align-items:center;gap:8px;font-size:26px; }
+.match-meta h4 { margin:0 0 5px;font-size:18px; }.match-meta small{color:#7f857a;}
+.stars { display:flex;gap:3px;cursor:pointer;color:#d6ef79;font-size:20px; }
+.add-match { border:1px solid #4a5145;background:#d6ef79;color:#111;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer; }
+
+.toast { position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px); background:var(--ink); color:var(--paper); border-radius:999px; padding:10px 16px; font-size:13px; opacity:0; pointer-events:none; transition:.25s ease; z-index:100; }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+
+@media (max-width: 960px) {
+  .site-header { grid-template-columns:1fr auto; }
+  .header-center { display:none; }
+  .hero-copy { grid-template-columns:1fr; }.hero-note{writing-mode:initial;}
+  .component-card,.component-card:nth-child(1),.component-card:nth-child(7){grid-column:span 6;}
+  .demo-heading{grid-template-columns:1fr;}
+  .gradient-app,.map-stage{grid-template-columns:1fr;}
+  .gradient-sidebar,.map-panel{border-right:0;border-bottom:1px solid rgba(0,0,0,.14);}
+  .swatch-list{grid-template-columns:repeat(2,1fr);}
+  .vacuum-grid{grid-template-columns:repeat(3,1fr);padding-right:0;padding-bottom:190px;}.vacuum-unit{top:auto;bottom:20px;right:30px;}
+}
+@media (max-width: 640px) {
+  .site-header { padding:0 16px;height:62px; }.brand small{display:none;}.header-actions .pill-btn{display:none;}
+  .page{min-height:calc(100vh - 62px)}
+  .home{padding:42px 14px 60px}.hero{margin-bottom:42px}.hero-title{font-size:clamp(58px,22vw,92px)}
+  .component-grid{gap:12px}.component-card,.component-card:nth-child(1),.component-card:nth-child(7){grid-column:1/-1;min-height:320px;padding:20px}
+  .demo-page{padding:0 10px 30px}.demo-stage{border-radius:20px}.demo-heading{padding:36px 8px 24px;gap:20px}.demo-heading h1{font-size:clamp(54px,20vw,88px)}
+  .captcha-box{padding:14px}.machine{height:360px}.toy-row{font-size:42px}.machine-controls{grid-template-columns:1fr auto}
+  .gradient-stage{padding:8px}.gradient-sidebar{padding:16px}.swatch-list{grid-template-columns:1fr}.gradient-canvas{min-height:430px}.gradient-toolbar{padding:13px}.copy-css{margin-left:0}
+  .scenes-stage{padding:14px}.phone-shelf{justify-content:flex-start;overflow-x:auto;padding:15px}.scene-phone{flex-basis:270px;height:550px}
+  .desk-stage{padding:8px}.desk{height:590px}.folio-book{width:94vw;height:430px}.folio-page{padding:20px 16px}.folio-page h3{font-size:30px}.folio-page p{font-size:13px}
+  .map-panel{padding:16px}.map-canvas{min-height:480px}.fur-stage,#furCanvas{min-height:600px;height:600px}
+  .vacuum-stage{padding:16px}.vacuum-grid{grid-template-columns:repeat(2,1fr)}
+  .holo-card{width:280px;height:410px}.holo-creature{height:205px;font-size:105px}
+  .match-stage{padding:16px}.match-hero{display:block;padding-top:38px}.match-row{grid-template-columns:70px 1fr}.match-row .stars{grid-column:2}.match-hero p{margin-top:20px}
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important;}
+}

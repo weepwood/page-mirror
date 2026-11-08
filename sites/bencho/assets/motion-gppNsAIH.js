@@ -1,0 +1,1 @@
+var e=e=>1.6-e/100*1.2,t=(e,t)=>Number((1+e/100*(t-1)*2).toFixed(3)),n=(e,n,r=.28,i=.36)=>`cubic-bezier(${r}, ${t(e,n)}, ${i}, 1)`;export{e as n,n as t};

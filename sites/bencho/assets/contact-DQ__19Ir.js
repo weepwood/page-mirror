@@ -1,0 +1,1 @@
+var e=`hello@bencho.dev`,t=t=>`mailto:${e}?subject=${encodeURIComponent(t)}`;export{t as n,e as t};

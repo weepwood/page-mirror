@@ -1,0 +1,218 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============ Heo 设计令牌（light） ============ */
+:root {
+  --heo-theme: #425aef;
+  --heo-theme-op: #4259ef23;
+  --heo-theme-op-deep: #4259efdd;
+  --heo-blue: #425aef;
+  --heo-red: #d80020;
+  --heo-pink: #ff7c7c;
+  --heo-green: #57bd6a;
+  --heo-yellow: #936900;
+  --heo-orange: #e38100;
+  --heo-purple: #7a60d2;
+  --heo-main: #425aef;
+  --heo-main-op: #4259ef23;
+  --heo-fontcolor: #363636;
+  --heo-background: #f7f9fe;
+  --heo-reversal: #fff;
+  --heo-card-bg: #fff;
+  --heo-card-border: #e3e8f7;
+  --heo-secondtext: rgba(60, 60, 67, 0.8);
+  --heo-secondbg: #f7f7f9;
+  --heo-card-btn-bg: #edf0f7;
+  --heo-lighttext: #ffffff;
+  --heo-shadow-border: 0 8px 16px -4px #2c2d300c;
+  --heo-shadow-nav: 0 5px 12px -5px rgba(102, 68, 68, 0.05);
+  --heo-shadow-theme: 0 8px 12px -3px var(--heo-theme-op);
+  --heo-shadow-main: 0 8px 12px -3px var(--heo-main-op);
+  --heo-logo-color: linear-gradient(215deg, #4584ff 0%, #cf0db9 100%);
+  --style-border: 1px solid var(--heo-card-border);
+  --style-border-hover: 1px solid var(--heo-theme);
+  --t: color 0.3s, background-color 0.3s, border-color 0.3s, opacity 0.3s,
+    transform 0.3s, box-shadow 0.3s;
+  --t-fast: color 0.2s, background-color 0.2s, border-color 0.2s, opacity 0.2s,
+    transform 0.2s, box-shadow 0.2s;
+  --t-bg: background-color 0.3s, color 0.3s, border-color 0.3s;
+  --heo-dock-right: 20px;
+  --heo-dock-bottom: 20px;
+  --heo-dock-width: 300px;
+  --heo-dock-duration: 0.6s;
+  --heo-dock-ease: cubic-bezier(0.42, 0, 0.3, 1.11);
+  --heo-dock-blur: saturate(180%) blur(20px);
+  --heo-musicColor: var(--heo-main);
+  --heo-radius: 12px;
+}
+
+/* ============ Heo 设计令牌（dark） ============ */
+.dark {
+  --heo-theme: #ffc848;
+  --heo-theme-op: #f2b94b23;
+  --heo-theme-op-deep: #f2b94bdd;
+  --heo-blue: #0084ff;
+  --heo-red: #ff3842;
+  --heo-pink: #d44040;
+  --heo-green: #3e9f50;
+  --heo-yellow: #ffc93e;
+  --heo-orange: #ff953e;
+  --heo-purple: #7a60d2;
+  --heo-main: #ffc848;
+  --heo-main-op: #f2b94b23;
+  --heo-fontcolor: #f7f7fa;
+  --heo-background: #17191d;
+  --heo-reversal: #000;
+  --heo-card-bg: #1b1c20;
+  --heo-card-border: #3d3d3f;
+  --heo-secondtext: #a1a2b8;
+  --heo-secondbg: #21232a;
+  --heo-card-btn-bg: #30343f;
+  --heo-lighttext: #fff;
+  --heo-shadow-border: 0 8px 16px -4px #00000050;
+  --heo-shadow-nav: 0 5px 20px 0 rgba(28, 28, 28, 0.4);
+  --heo-shadow-theme: 0 8px 12px -3px var(--heo-theme-op);
+  --heo-shadow-main: 0 8px 12px -3px var(--heo-main-op);
+  --heo-logo-color: linear-gradient(215deg, #4584ff 0%, #cf0db9 100%);
+  --style-border: 1px solid var(--heo-card-border);
+  --style-border-hover: 1px solid var(--heo-theme);
+  --heo-musicColor: var(--heo-main);
+}
+
+/* ============ Tailwind 语义映射 ============ */
+@theme inline {
+  --color-background: var(--heo-background);
+  --color-foreground: var(--heo-fontcolor);
+  --color-card: var(--heo-card-bg);
+  --color-card-foreground: var(--heo-fontcolor);
+  --color-popover: var(--heo-card-bg);
+  --color-popover-foreground: var(--heo-fontcolor);
+  --color-primary: var(--heo-theme);
+  --color-primary-foreground: var(--heo-lighttext);
+  --color-secondary: var(--heo-secondbg);
+  --color-secondary-foreground: var(--heo-fontcolor);
+  --color-muted: var(--heo-secondbg);
+  --color-muted-foreground: var(--heo-secondtext);
+  --color-accent: var(--heo-secondbg);
+  --color-accent-foreground: var(--heo-theme);
+  --color-destructive: var(--heo-red);
+  --color-border: var(--heo-card-border);
+  --color-input: var(--heo-card-border);
+  --color-ring: var(--heo-theme);
+  --color-heo-theme: var(--heo-theme);
+  --color-heo-bg: var(--heo-background);
+  --color-heo-card: var(--heo-card-bg);
+  --color-heo-font: var(--heo-fontcolor);
+  --color-heo-second: var(--heo-secondtext);
+  --color-heo-border: var(--heo-card-border);
+  --color-heo-secondbg: var(--heo-secondbg);
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    -apple-system, sans-serif;
+  --radius: 0.625rem;
+}
+
+/* ============ 基础 ============ */
+@layer base {
+  * {
+    border-color: var(--heo-card-border);
+  }
+  html {
+    font-size: 20px;
+  }
+  body {
+    background: var(--heo-background);
+    color: var(--heo-fontcolor);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+      -apple-system, sans-serif;
+    line-height: 2;
+    font-size: 16px;
+    transition: var(--t-bg);
+  }
+  a {
+    color: var(--heo-fontcolor);
+    transition: var(--t);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--heo-theme);
+  }
+  ::selection {
+    background: var(--heo-theme);
+    color: var(--heo-reversal);
+  }
+  img {
+    -webkit-user-drag: none;
+  }
+  /* 自定义滚动条 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--heo-card-border);
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--heo-theme);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* ============ Heo 组件通用样式 ============ */
+@layer components {
+  /* 卡片通用 */
+  .heo-card {
+    background: var(--heo-card-bg);
+    border: var(--style-border);
+    border-radius: var(--heo-radius);
+    box-shadow: var(--heo-shadow-border);
+    transition: var(--t);
+  }
+  .heo-card:hover {
+    border: var(--style-border-hover);
+    box-shadow: var(--heo-shadow-theme);
+  }
+  /* 徽章（分类/最新/未读） */
+  .heo-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    height: 22px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 22px;
+    white-space: nowrap;
+  }
+  /* 二级文本 */
+  .heo-secondtext {
+    color: var(--heo-secondtext);
+  }
+  /* 隐藏滚动条 */
+  .heo-scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .heo-scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ============ 动效 ============ */
+@keyframes heo-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.heo-animate-fade-in-up {
+  animation: heo-fade-in-up 0.4s ease both;
+}

@@ -1,0 +1,1 @@
+import{r as n}from"./7cVyfpow.js";const t="shaders:lastProject";function s(){const e=n(null);function a(){e.value=localStorage.getItem(t)}function l(o){localStorage.setItem(t,o),e.value=o}function r(){localStorage.removeItem(t),e.value=null}return{lastProjectId:e,load:a,save:l,clear:r}}export{s as u};

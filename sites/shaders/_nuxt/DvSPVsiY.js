@@ -1,0 +1,1 @@
+import"./7cVyfpow.js";function r(t){return new URL(globalThis.location.href)}function s(t){const e="/"+t.trim().replace(/^\/+/,"");try{const{hostname:n}=r();if(n==="next.shaders.com")return e}catch{}return`https://static.shaders.com${e}`}export{s as c};

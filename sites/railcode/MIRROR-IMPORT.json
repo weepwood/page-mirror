@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/railcode-mirror",
+  "branch": "main",
+  "commit": "aacc0ef11e012e858b4cdbbebf5446c369d22cea",
+  "importedAt": "2026-10-20",
+  "kind": "static",
+  "note": "一次性本地导入；原仓库为私有，迁入公开的 page-mirror 后由本仓库维护。"
+}

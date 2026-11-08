@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: public-mirror-import
@@ -59,3 +60,9 @@ jobs:
           else
             echo "No new mirrors to commit."
           fi
+
+      # GITHUB_TOKEN 推送的提交不会自动触发 push 工作流；显式调度发布。
+      - name: Deploy updated mirror collection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run pages.yml --ref main

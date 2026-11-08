@@ -2,16 +2,6 @@
   "schemaVersion": 1,
   "sites": [
     {
-      "slug": "holo",
-      "name": "Holo — AI Marketing",
-      "sourceUrl": "https://holo.ui8.dev/",
-      "description": "Holo 营销网站镜像；目前为首版结构实现，仍需逐屏对照原站。",
-      "status": "building",
-      "previewPath": "sites/holo/",
-      "readme": "sites/holo/README.md",
-      "updatedAt": "2026-10-09"
-    },
-    {
       "slug": "artcraft-apps",
       "name": "ArtCraft — Crafting Apps",
       "sourceUrl": "https://getartcraft.com/apps",
@@ -19,6 +9,16 @@
       "status": "review",
       "previewPath": "sites/artcraft-apps/",
       "readme": "sites/artcraft-apps/README.md",
+      "updatedAt": "2026-10-09"
+    },
+    {
+      "slug": "holo",
+      "name": "Holo — AI Marketing",
+      "sourceUrl": "https://holo.ui8.dev/",
+      "description": "Holo 营销网站镜像；目前为首版结构实现，仍需逐屏对照原站。",
+      "status": "building",
+      "previewPath": "sites/holo/",
+      "readme": "sites/holo/README.md",
       "updatedAt": "2026-10-09"
     },
     {
@@ -30,6 +30,28 @@
       "previewPath": "sites/inftab/",
       "readme": "sites/inftab/README.md",
       "updatedAt": "2026-10-10"
+    },
+    {
+      "slug": "inftab-app",
+      "name": "Infinity New Tab · 交互版",
+      "sourceUrl": "https://inftab.com/",
+      "description": "基于 Vue 3 的可交互复刻版本，独立构建并在统一目录部署。",
+      "status": "review",
+      "previewPath": "sites/inftab-app/",
+      "readme": "sites/inftab-app/README.md",
+      "updatedAt": "2026-10-16",
+      "sourceRepository": "weepwood/inftab-mirror"
+    },
+    {
+      "slug": "mimo-rl",
+      "name": "MiMo RL · 原站静态镜像",
+      "sourceUrl": "https://mimo.xiaomi.com/rl/",
+      "description": "MiMo RL 原站资源、图表和静态指标数据的完整快照；迁移后在统一仓库维护。",
+      "status": "review",
+      "previewPath": "sites/mimo-rl/",
+      "readme": "sites/mimo-rl/README.md",
+      "updatedAt": "2026-10-09",
+      "sourceRepository": "weepwood/mimo-mirror"
     },
     {
       "slug": "weread",

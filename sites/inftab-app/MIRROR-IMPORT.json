@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/inftab-mirror",
+  "branch": "main",
+  "commit": "ee2cd7b8c0473039fe4d24c49ff2c9dda8a44ed7",
+  "importedAt": "2026-10-16",
+  "kind": "vite",
+  "note": "从公开仓库导入；本目录后续由 page-mirror 维护。"
+}

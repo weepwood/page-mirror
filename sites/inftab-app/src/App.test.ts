@@ -1,0 +1,1137 @@
+// @vitest-environment jsdom
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
+import { nextTick } from 'vue'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { defaultPreferences, launcherItems, wallpaperChoices } from './data/defaults'
+import * as imageProcessing from './data/images'
+import WeatherPanel from './components/WeatherPanel.vue'
+import App from './App.vue'
+
+let wrapper: VueWrapper = null!
+
+async function mountApp(): Promise<VueWrapper> {
+  wrapper = mount(App, { attachTo: document.body })
+  await vi.waitFor(() => expect(wrapper.find('.shortcut-grid-wrap').exists()).toBe(true), { timeout: 5_000 })
+  return wrapper
+}
+
+async function flushLocalStorageWrites() {
+  await nextTick()
+  window.dispatchEvent(new Event('pagehide'))
+}
+
+async function openLauncher(id: string) {
+  const builtin = launcherItems.find((item) => item.id === id || item.title === id)
+  const trigger = builtin
+    ? wrapper.get(`[data-item-id="${builtin.id}"] .shortcut-open`)
+    : wrapper.get(`.shortcut-open[aria-label="打开${id}"]`)
+  await trigger.trigger('click')
+  await flushPromises()
+  await vi.waitFor(() => expect(wrapper.find('.panel-loading').exists()).toBe(false), { timeout: 5_000 })
+}
+
+async function openFolderDialog() {
+  await wrapper.get('.folder-add-button').trigger('click')
+  await flushPromises()
+  await vi.waitFor(() => expect(wrapper.find('.folder-dialog').exists()).toBe(true), { timeout: 5_000 })
+}
+
+async function confirmPendingAction() {
+  await flushPromises()
+  await vi.waitFor(() => expect(wrapper.find('.confirm-dialog').exists()).toBe(true), { timeout: 5_000 })
+  await wrapper.get('.confirm-dialog .confirm-danger').trigger('click')
+  await flushPromises()
+}
+
+async function selectBackupFile(contents: unknown) {
+  const file = new File(['backup'], 'inftab-backup.json', { type: 'application/json' })
+  Object.defineProperty(file, 'text', { value: async () => typeof contents === 'string' ? contents : JSON.stringify(contents) })
+  const input = wrapper.get('input[accept="application/json,.json"]')
+  Object.defineProperty(input.element, 'files', { configurable: true, value: [file] })
+  await input.trigger('change')
+  await flushPromises()
+}
+
+function validBackup(overrides: Record<string, unknown> = {}) {
+  return {
+    format: 'inftab-workspace',
+    version: 1,
+    exportedAt: '2026-10-12T00:00:00.000Z',
+    preferences: { ...defaultPreferences },
+    shortcuts: [],
+    folders: [],
+    launcherOrder: [],
+    todos: [],
+    countdowns: [],
+    notes: [],
+    activeNoteId: '',
+    weatherCity: '上海',
+    ...overrides,
+  }
+}
+
+afterEach(() => {
+  wrapper?.unmount()
+  wrapper = null!
+  localStorage.clear()
+  document.body.innerHTML = ''
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
+
+describe('new-tab landmarks', () => {
+  it('provides a skip link and a screen-reader page heading', async () => {
+    await mountApp()
+
+    expect(document.querySelector('.skip-link')?.getAttribute('href')).toBe('#main-content')
+    expect(wrapper.get('main h1').text()).toBe('Infinity 新标签页')
+    expect(wrapper.get('#main-content').attributes('tabindex')).toBe('-1')
+  })
+})
+
+describe('new-tab keyboard launcher ordering', () => {
+  it('moves a focused launcher and persists the new order', async () => {
+    await mountApp()
+    const weather = wrapper.get('[data-item-id="weather"] .shortcut-open')
+    await weather.trigger('keydown', { key: 'ArrowRight', shiftKey: true })
+    await flushLocalStorageWrites()
+
+    const order = JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]') as string[]
+    expect(order.indexOf('weather')).toBe(order.indexOf('countdowns') + 1)
+    await vi.waitFor(() => {
+      const status = wrapper.findAll('[role="status"]').find((item) => item.text().includes('已将天气移动到第2个位置'))
+      expect(status?.text()).toContain('已将天气移动到第2个位置')
+    })
+  })
+})
+
+describe('new-tab short viewport layout', () => {
+  it('fits launcher icons to a short mobile viewport', async () => {
+    const heightDescriptor = Object.getOwnPropertyDescriptor(window, 'innerHeight')
+    const widthDescriptor = Object.getOwnPropertyDescriptor(window, 'innerWidth')
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 360 })
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 })
+    try {
+      await mountApp()
+      const homeStyle = wrapper.get('main.home').attributes('style') ?? ''
+      const fittedIconSize = Number(homeStyle.match(/--fit-icon-size: ([\d.]+)px/)?.[1])
+
+      expect(fittedIconSize).toBeCloseTo(31, 1)
+      expect(homeStyle).toContain('--shortcut-gap-y: 4px')
+    } finally {
+      if (heightDescriptor) Object.defineProperty(window, 'innerHeight', heightDescriptor)
+      if (widthDescriptor) Object.defineProperty(window, 'innerWidth', widthDescriptor)
+    }
+  })
+})
+
+describe('new-tab shortcut dialog asynchronous work', () => {
+  it('preserves shortcut titles up to the shared 80-character data limit', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+
+    const title = '长'.repeat(80)
+    const titleInput = wrapper.get('.shortcut-dialog input[placeholder="例如：GitHub"]')
+    expect(titleInput.attributes('maxlength')).toBe('80')
+    await titleInput.setValue(title)
+    await wrapper.get('.shortcut-dialog input[placeholder="https://example.com"]').setValue('https://long-title.example/')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    await flushLocalStorageWrites()
+
+    const shortcuts = JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]') as Array<{ title: string; url: string }>
+    expect(shortcuts).toContainEqual(expect.objectContaining({ title, url: 'https://long-title.example/' }))
+  })
+
+  it('ignores a shortcut icon upload after its dialog closes and reopens', async () => {
+    let resolveCompression!: (dataUrl: string) => void
+    vi.spyOn(imageProcessing, 'compressImageBlob').mockImplementation(() => new Promise((resolve) => { resolveCompression = resolve }))
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    const fileInput = wrapper.get('.shortcut-dialog input[type="file"]')
+    Object.defineProperty(fileInput.element, 'files', {
+      configurable: true,
+      value: [new File(['icon'], 'icon.png', { type: 'image/png' })],
+    })
+    await fileInput.trigger('change')
+    await vi.waitFor(() => expect(imageProcessing.compressImageBlob).toHaveBeenCalledOnce())
+
+    await wrapper.get('.shortcut-dialog button[aria-label="关闭"]').trigger('click')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    resolveCompression('data:image/webp;base64,c3RhbGU=')
+    await flushPromises()
+
+    expect(wrapper.get('.shortcut-dialog input[placeholder="素材文件名、图片网址或 Base64"]').element).toHaveProperty('value', '')
+    expect(wrapper.find('.shortcut-dialog').exists()).toBe(true)
+    expect(wrapper.find('.shortcut-dialog [role="alert"]').exists()).toBe(false)
+  })
+
+  it('does not save or close a reopened dialog when a previous remote icon save finishes', async () => {
+    let resolveImageFetch!: (dataUrl: string) => void
+    vi.spyOn(imageProcessing, 'fetchAndCompressImage').mockImplementation(() => new Promise((resolve) => { resolveImageFetch = resolve }))
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await wrapper.get('.shortcut-dialog input[placeholder="例如：GitHub"]').setValue('Cancelled shortcut')
+    await wrapper.get('.shortcut-dialog input[placeholder="https://example.com"]').setValue('https://cancelled.example/')
+    await wrapper.get('.shortcut-dialog input[placeholder="素材文件名、图片网址或 Base64"]').setValue('https://images.example/icon.png')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    await vi.waitFor(() => expect(imageProcessing.fetchAndCompressImage).toHaveBeenCalledOnce())
+
+    await wrapper.get('.shortcut-dialog button[aria-label="关闭"]').trigger('click')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    resolveImageFetch('data:image/webp;base64,c3RhbGU=')
+    await flushPromises()
+    await flushLocalStorageWrites()
+
+    expect(wrapper.find('.shortcut-dialog').exists()).toBe(true)
+    expect(wrapper.get('.shortcut-dialog input[placeholder="例如：GitHub"]').element).toHaveProperty('value', '')
+    const shortcuts = JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]') as Array<{ title: string }>
+    expect(shortcuts.some((item) => item.title === 'Cancelled shortcut')).toBe(false)
+  })
+})
+
+describe('new-tab color theme', () => {
+  it('applies an explicit dark theme and follows operating-system changes', async () => {
+    const changeListeners = new Set<(event: MediaQueryListEvent) => void>()
+    vi.stubGlobal('matchMedia', () => ({
+      matches: false,
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => changeListeners.add(listener),
+      removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => changeListeners.delete(listener),
+    }))
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, themeMode: 'system' }))
+    await mountApp()
+    await nextTick()
+    expect(wrapper.get('main.home').classes()).not.toContain('theme-dark')
+
+    changeListeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent))
+    await nextTick()
+    expect(wrapper.get('main.home').classes()).toContain('theme-dark')
+
+    wrapper.unmount()
+    wrapper = null!
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, themeMode: 'dark' }))
+    await mountApp()
+    await nextTick()
+    expect(wrapper.get('main.home').classes()).toContain('theme-dark')
+    await wrapper.get('.engine-picker').trigger('click')
+    await nextTick()
+    expect(document.body.querySelector('.engine-menu')?.classList).toContain('theme-dark')
+  })
+})
+
+describe('new-tab built-in launcher visibility', () => {
+  it('hides a panel from the grid and restores it from settings', async () => {
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, hiddenLauncherIds: ['weather'] }))
+    await mountApp()
+    await nextTick()
+    expect(wrapper.find('[data-item-id="weather"]').exists()).toBe(false)
+
+    await wrapper.get('[aria-label="打开设置"]').trigger('click')
+    await flushPromises()
+    await vi.waitFor(() => expect(wrapper.find('.panel-loading').exists()).toBe(false), { timeout: 5_000 })
+    const weatherRow = wrapper.findAll('label.toggle-row').find((row) => row.text().includes('显示天气'))!
+    const weatherToggle = weatherRow.get('input')
+    expect((weatherToggle.element as HTMLInputElement).checked).toBe(false)
+    await wrapper.get('.panel-close').trigger('click')
+    await nextTick()
+    const settingsButton = wrapper.get('[data-item-id="settings"] .shortcut-open')
+    await settingsButton.trigger('keydown', { key: 'ArrowLeft', shiftKey: true })
+    await flushLocalStorageWrites()
+    const reordered = JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]') as string[]
+    expect(reordered.indexOf('weather')).toBe(0)
+
+    await wrapper.get('[aria-label="打开设置"]').trigger('click')
+    await flushPromises()
+    await vi.waitFor(() => expect(wrapper.find('.panel-loading').exists()).toBe(false), { timeout: 5_000 })
+    const restoredWeatherRow = wrapper.findAll('label.toggle-row').find((row) => row.text().includes('显示天气'))!
+    await restoredWeatherRow.get('input').setValue(true)
+    await nextTick()
+    await flushLocalStorageWrites()
+    expect(wrapper.find('[data-item-id="weather"]').exists()).toBe(true)
+    const restoredOrder = JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]') as string[]
+    expect(restoredOrder.indexOf('weather')).toBe(0)
+  })
+})
+
+describe('new-tab wallpaper rotation', () => {
+  it('rotates on schedule and persists the new wallpaper for the next tab', async () => {
+    vi.useFakeTimers()
+    const now = new Date('2026-01-01T12:00:00Z').getTime()
+    vi.setSystemTime(now)
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({
+      ...defaultPreferences,
+      wallpaperRotation: 'hourly',
+      wallpaperRotationLastAt: now,
+    }))
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout')
+    await mountApp()
+    await nextTick()
+    await flushPromises()
+    expect(wrapper.get('main.home').attributes('style')).toContain('forest.webp')
+    await vi.waitFor(() => {
+      expect(setTimeoutSpy.mock.calls.some(([, delay]) => typeof delay === 'number' && delay > 60 * 60 * 1000 - 1_000 && delay <= 60 * 60 * 1000)).toBe(true)
+    })
+
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000)
+    await nextTick()
+    expect(wrapper.get('main.home').attributes('style')).toContain('background-image: linear-gradient')
+    await flushLocalStorageWrites()
+    const savedPreferences = JSON.parse(localStorage.getItem('inftab.preferences.v1') ?? '{}') as typeof defaultPreferences
+    expect(savedPreferences.wallpaper).toBe(wallpaperChoices[1]!.value)
+    expect(savedPreferences.wallpaperRotationLastAt).toBe(now + 60 * 60 * 1000)
+  })
+
+  it('pauses automatic changes while a custom background is active', async () => {
+    vi.useFakeTimers()
+    const now = new Date('2026-01-01T12:00:00Z').getTime()
+    vi.setSystemTime(now)
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({
+      ...defaultPreferences,
+      wallpaperRotation: 'hourly',
+      wallpaperRotationLastAt: now,
+      customWallpaper: 'https://example.com/custom-wallpaper.webp',
+    }))
+    await mountApp()
+    await vi.advanceTimersByTimeAsync(2 * 60 * 60 * 1000)
+    await nextTick()
+    expect(wrapper.get('main.home').attributes('style')).toContain('custom-wallpaper.webp')
+
+    await flushLocalStorageWrites()
+    const savedPreferences = JSON.parse(localStorage.getItem('inftab.preferences.v1') ?? '{}') as typeof defaultPreferences
+    expect(savedPreferences.wallpaper).toBe(defaultPreferences.wallpaper)
+    expect(savedPreferences.wallpaperRotationLastAt).toBe(now)
+  })
+})
+
+describe('focus timer lifecycle', () => {
+  it('advances a finished session while its panel is closed', async () => {
+    await import('./data/focusTimer')
+    vi.useFakeTimers()
+    const now = 1_800_000_000_000
+    vi.setSystemTime(now)
+    localStorage.setItem('inftab.focus-timer.v1', JSON.stringify({
+      phase: 'focus', focusMinutes: 25, shortBreakMinutes: 5, longBreakMinutes: 15,
+      completedSessions: 0, remainingMs: 1_000, endsAt: now + 1_000,
+    }))
+    await mountApp()
+
+    await vi.advanceTimersByTimeAsync(1_000)
+    await flushPromises()
+    await flushLocalStorageWrites()
+
+    expect(JSON.parse(localStorage.getItem('inftab.focus-timer.v1') ?? '{}')).toMatchObject({
+      phase: 'short-break', completedSessions: 1, endsAt: null, remainingMs: 5 * 60_000,
+    })
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
+  })
+})
+
+describe('new-tab keyboard search', () => {
+  it('filters launcher shortcuts with Ctrl/Command+F and opens a selected result', async () => {
+    await mountApp()
+    const shortcut = new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true, cancelable: true })
+    window.dispatchEvent(shortcut)
+
+    expect(shortcut.defaultPrevented).toBe(true)
+    await nextTick()
+    const input = wrapper.get('input[type="search"]')
+    expect(input.attributes('placeholder')).toBe('搜索快捷入口名称或网址')
+    await input.setValue('计算器')
+    expect(wrapper.get('.local-search-results').text()).toContain('计算器')
+    expect(wrapper.findAll('.local-search-result')).toHaveLength(1)
+
+    await input.trigger('keydown', { key: 'ArrowDown' })
+    expect(document.activeElement).toBe(wrapper.get('.local-search-result').element)
+    await wrapper.get('.local-search-result').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('.side-panel[role="dialog"]').text()).toContain('计算器')
+    expect(wrapper.find('.local-search-results').exists()).toBe(false)
+  })
+
+  it('keeps empty local searches local and exits with Escape', async () => {
+    await mountApp()
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', metaKey: true, bubbles: true, cancelable: true }))
+    await nextTick()
+    const input = wrapper.get('input[type="search"]')
+    await input.setValue('there-is-no-matching-shortcut')
+    expect(wrapper.get('.local-search-empty').text()).toContain('没有匹配')
+    await wrapper.get('.search-box').trigger('submit')
+    expect(wrapper.find('.side-panel').exists()).toBe(false)
+    expect(wrapper.find('.local-search-empty').exists()).toBe(true)
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await nextTick()
+    expect(wrapper.find('.local-search-results').exists()).toBe(false)
+    expect(input.attributes('placeholder')).toBe('输入并搜索')
+  })
+
+  it('focuses search with slash or Ctrl/Command+K', async () => {
+    await mountApp()
+    const input = wrapper.get('input[type="search"]').element
+
+    const slash = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true })
+    window.dispatchEvent(slash)
+    expect(slash.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(input)
+
+    document.body.focus()
+    const commandK = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true })
+    window.dispatchEvent(commandK)
+    expect(commandK.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(input)
+  })
+
+  it('does not intercept typing shortcuts while a text field is active', async () => {
+    await mountApp()
+    const input = wrapper.get('input[type="search"]').element as HTMLInputElement
+    input.focus()
+
+    const slash = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true })
+    input.dispatchEvent(slash)
+    expect(slash.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(input)
+  })
+
+  it('keeps page navigation compact and supports direct jumps on large shortcut collections', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false, addListener: () => {}, removeListener: () => {} }))
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, pageTransitionEffect: 'slide' }))
+    localStorage.setItem('inftab.shortcuts.v1', JSON.stringify(Array.from({ length: 200 }, (_, index) => ({
+      id: 'shortcut-' + index,
+      title: 'Shortcut ' + index,
+      url: `https://shortcut-${index}.example/`,
+      color: '#abc',
+      mark: 'S',
+    }))))
+    await mountApp()
+
+    expect(wrapper.findAll('.page-dots .page-dot')).toHaveLength(4)
+    expect(wrapper.find('.page-ellipsis').exists()).toBe(true)
+    expect(wrapper.get('.page-dots [aria-label="第12页"]').attributes('aria-current')).toBeUndefined()
+    await wrapper.get('.page-dots [aria-label="第12页"]').trigger('click')
+
+    expect(wrapper.get('.page-dots [aria-label="第12页"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.findAll('.page-dots .page-dot')).toHaveLength(4)
+  })
+
+  it('closes only the top shortcut dialog before its settings panel', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await nextTick()
+
+    expect(wrapper.find('.shortcut-dialog').exists()).toBe(false)
+    expect(wrapper.get('.side-panel[role="dialog"]').text()).toContain('设置')
+  })
+
+  it('keeps homepage search and page shortcuts inactive while the folder dialog is open', async () => {
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, columns: 2, rows: 1, pageTransitionEffect: 'slide' }))
+    await mountApp()
+    await wrapper.get('.home-actions .round-action[aria-label="打开设置"]').trigger('click')
+    await flushPromises()
+    await vi.waitFor(() => expect(wrapper.find('.panel-loading').exists()).toBe(false), { timeout: 5_000 })
+    await openFolderDialog()
+    const closeButton = wrapper.get('.folder-dialog [aria-label="关闭文件夹"]').element as HTMLButtonElement
+    closeButton.focus()
+    const currentPage = wrapper.get('.page-dots [aria-current="page"]').attributes('aria-label')
+
+    for (const options of [
+      { key: '/', ctrlKey: false },
+      { key: 'k', ctrlKey: true },
+      { key: 'ArrowRight', ctrlKey: false },
+      { key: 'ArrowLeft', ctrlKey: false },
+    ]) {
+      const event = new KeyboardEvent('keydown', { ...options, bubbles: true, cancelable: true })
+      closeButton.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
+      expect(document.activeElement).toBe(closeButton)
+    }
+
+    expect(wrapper.get('.page-dots [aria-current="page"]').attributes('aria-label')).toBe(currentPage)
+    expect(wrapper.get('.search-box input[type="search"]').attributes('placeholder')).toBe('输入并搜索')
+  })
+
+  it('traps focus in an open side panel and restores it to the opener', async () => {
+    await mountApp()
+    const opener = wrapper.get('.shortcut-open[aria-label="打开设置"]').element as HTMLButtonElement
+    opener.focus()
+    await openLauncher('settings')
+    await nextTick()
+
+    const panel = wrapper.get('.side-panel[role="dialog"]')
+    const focusable = panel.findAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]):not(.visually-hidden), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"]):not(.visually-hidden)')
+    for (const fileInput of panel.findAll('input.visually-hidden')) expect(fileInput.attributes('tabindex')).toBe('-1')
+    const first = focusable[0]!.element as HTMLElement
+    const last = focusable.at(-1)!.element as HTMLElement
+    expect(panel.element.contains(document.activeElement)).toBe(true)
+
+    last.focus()
+    const tabForward = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+    last.dispatchEvent(tabForward)
+    expect(tabForward.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(first)
+
+    const tabBackward = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true })
+    first.dispatchEvent(tabBackward)
+    expect(tabBackward.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(last)
+
+    await wrapper.get('.panel-close').trigger('click')
+    await nextTick()
+    expect(document.activeElement).toBe(opener)
+  })
+
+  it('connects plugin events with colons to the workspace state', async () => {
+    await mountApp()
+    await openLauncher('weather')
+    expect(wrapper.findComponent(WeatherPanel).exists()).toBe(true)
+
+    wrapper.findComponent(WeatherPanel).vm.$emit('update:city', '广州')
+    await flushLocalStorageWrites()
+
+    expect(JSON.parse(localStorage.getItem('inftab.weather-city.v1') ?? '""')).toBe('广州')
+  })
+
+  it('routes the browser bookmarks launcher to its permission-aware panel', async () => {
+    await mountApp()
+    await openLauncher('书签')
+    expect(wrapper.get('.side-panel[role="dialog"]').text()).toContain('此功能需要浏览器扩展')
+  })
+
+  it('prepopulates a new shortcut from a browser bookmark', async () => {
+    const bookmarkChange = { addListener: vi.fn(), removeListener: vi.fn() }
+    vi.stubGlobal('chrome', {
+      runtime: { id: 'extension-id' },
+      permissions: { contains: vi.fn().mockResolvedValue(true), request: vi.fn().mockResolvedValue(true) },
+      bookmarks: {
+        getTree: vi.fn().mockResolvedValue([{
+          id: '0', title: '', children: [{
+            id: '1', title: 'Bookmarks Bar', children: [{ id: '2', title: 'Vue Docs', url: 'https://vuejs.org/' }],
+          }],
+        }]),
+        onCreated: bookmarkChange,
+        onChanged: bookmarkChange,
+        onMoved: bookmarkChange,
+        onRemoved: bookmarkChange,
+        onChildrenReordered: bookmarkChange,
+        onImportEnded: bookmarkChange,
+      },
+    })
+    await mountApp()
+    await openLauncher('书签')
+    await wrapper.get('[aria-label="添加Vue Docs到快捷入口"]').trigger('click')
+
+    expect((wrapper.get('input[placeholder="例如：GitHub"]').element as HTMLInputElement).value).toBe('Vue Docs')
+    expect((wrapper.get('input[placeholder="https://example.com"]').element as HTMLInputElement).value).toBe('https://vuejs.org/')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    await flushLocalStorageWrites()
+
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]')).toContainEqual(expect.objectContaining({
+      title: 'Vue Docs', url: 'https://vuejs.org/',
+    }))
+  })
+
+  it('bulk imports selected browser bookmarks into the active local workspace', async () => {
+    const bookmarkChange = { addListener: vi.fn(), removeListener: vi.fn() }
+    vi.stubGlobal('chrome', {
+      runtime: { id: 'extension-id' },
+      permissions: { contains: vi.fn().mockResolvedValue(true), request: vi.fn() },
+      bookmarks: {
+        getTree: vi.fn().mockResolvedValue([{ id: '0', title: '', children: [
+          { id: '2', title: 'Vue Docs', url: 'https://vuejs.org/' },
+          { id: '3', title: 'Vite Docs', url: 'https://vite.dev/' },
+        ] }]),
+        onCreated: bookmarkChange,
+        onChanged: bookmarkChange,
+        onMoved: bookmarkChange,
+        onRemoved: bookmarkChange,
+        onChildrenReordered: bookmarkChange,
+        onImportEnded: bookmarkChange,
+      },
+    })
+    await mountApp()
+    await openLauncher('书签')
+    await wrapper.get('[aria-label="选择Vue Docs"]').setValue(true)
+    await wrapper.get('[aria-label="选择Vite Docs"]').setValue(true)
+    await wrapper.get('.bookmark-bulk-actions .button-primary').trigger('click')
+    await flushLocalStorageWrites()
+
+    const savedShortcuts = JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]') as Array<{ title: string; url: string }>
+    expect(savedShortcuts).toContainEqual(expect.objectContaining({ title: 'Vue Docs', url: 'https://vuejs.org/' }))
+    expect(savedShortcuts).toContainEqual(expect.objectContaining({ title: 'Vite Docs', url: 'https://vite.dev/' }))
+    expect(wrapper.text()).toContain('已导入 2 个快捷入口')
+  })
+
+  it('routes the browser history launcher to its permission-aware panel', async () => {
+    await mountApp()
+    await openLauncher('history')
+    expect(wrapper.get('.side-panel[role="dialog"]').text()).toContain('此功能需要浏览器扩展')
+  })
+
+  it('loads the calendar as a built-in on-demand panel', async () => {
+    await mountApp()
+    await openLauncher('日历')
+
+    expect(wrapper.get('.side-panel[role="dialog"] h2').text()).toBe('日历')
+    expect(wrapper.findAll('.calendar-day')).toHaveLength(42)
+  })
+
+  it('opens the focus timer from its built-in launcher', async () => {
+    await mountApp()
+    await openLauncher('focus-timer')
+
+    expect(wrapper.get('.side-panel[role="dialog"] h2').text()).toBe('专注计时')
+    expect(wrapper.get('[role="timer"]').text()).toBe('25:00')
+  })
+
+  it('rejects unsafe shortcut URLs and restores a valid shortcut after remount', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await wrapper.get('input[placeholder="例如：GitHub"]').setValue('Example')
+    await wrapper.get('input[placeholder="https://example.com"]').setValue('javascript:alert(1)')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+
+    expect(wrapper.get('.shortcut-dialog [role="alert"]').text()).toContain('HTTP 或 HTTPS')
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]').some((item: { title: string }) => item.title === 'Example')).toBe(false)
+
+    await wrapper.get('input[placeholder="https://example.com"]').setValue('https://example.com@evil.example/')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    expect(wrapper.get('.shortcut-dialog [role="alert"]').text()).toContain('有效的 HTTP 或 HTTPS 网址')
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]').some((item: { title: string }) => item.title === 'Example')).toBe(false)
+
+    await wrapper.get('input[placeholder="https://example.com"]').setValue('example.com')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    await flushLocalStorageWrites()
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]')).toContainEqual(expect.objectContaining({
+      title: 'Example',
+      url: 'https://example.com/',
+    }))
+
+    wrapper.unmount()
+    await mountApp()
+    await nextTick()
+    expect(JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]')).toContain(
+      JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]').find((item: { title: string }) => item.title === 'Example')?.id,
+    )
+  })
+
+  it('creates a folder, opens it, and launches a contained shortcut', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    const columns = wrapper.findAll('.settings-content .range-label').find((label) => label.text().includes('每行图标'))
+    await columns!.get('input').setValue('12')
+    await openFolderDialog()
+    await wrapper.get('.folder-dialog input[placeholder="例如：工作"]').setValue('工作')
+    const folderChoices = wrapper.findAll('.folder-choice input[type="checkbox"]')
+    await folderChoices[0]!.setValue(true)
+    await folderChoices[1]!.setValue(true)
+    await wrapper.get('.folder-dialog button.button-primary').trigger('click')
+    await flushLocalStorageWrites()
+
+    const folders = JSON.parse(localStorage.getItem('inftab.folders.v1') ?? '[]')
+    expect(folders).toHaveLength(1)
+    expect(folders[0].shortcutIds).toEqual(['jd', 'tmall'])
+    expect(JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]')).toContain(folders[0].id)
+    expect(JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]')).not.toContain('jd')
+    expect(wrapper.find('[data-item-id="jd"]').exists()).toBe(false)
+    expect(wrapper.find('[data-item-id="tmall"]').exists()).toBe(false)
+
+    await wrapper.get('.panel-close').trigger('click')
+    await openLauncher('工作')
+    expect(wrapper.get('.folder-dialog').text()).toContain('京东商城')
+    const open = vi.spyOn(window, 'open').mockReturnValue(null)
+    await wrapper.get('.folder-link').trigger('click')
+    expect(open).toHaveBeenCalledWith('https://www.jd.com/', '_blank', 'noopener,noreferrer')
+    await wrapper.get('.folder-toolbar button').trigger('click')
+    expect(open).toHaveBeenCalledTimes(3)
+    expect(open).toHaveBeenNthCalledWith(2, 'https://www.jd.com/', '_blank', 'noopener,noreferrer')
+    expect(open).toHaveBeenNthCalledWith(3, 'https://www.tmall.com/', '_blank', 'noopener,noreferrer')
+    const folderId = folders[0].id
+    await wrapper.get('.folder-dialog .danger-action').trigger('click')
+    await vi.waitFor(() => expect(wrapper.find('[role="alertdialog"]').exists()).toBe(true), { timeout: 5_000 })
+    expect(wrapper.find('[role="alertdialog"]').text()).toContain('其中的快捷入口会保留')
+    await confirmPendingAction()
+    await flushLocalStorageWrites()
+    expect(JSON.parse(localStorage.getItem('inftab.folders.v1') ?? '[]')).toHaveLength(0)
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]').some((item: { id: string }) => item.id === 'jd')).toBe(true)
+    expect(JSON.parse(localStorage.getItem('inftab.launcher-order.v1') ?? '[]')).not.toContain(folderId)
+  })
+
+  it('discards folder edits when cancelling', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    const columns = wrapper.findAll('.settings-content .range-label').find((label) => label.text().includes('每行图标'))
+    await columns!.get('input').setValue('12')
+    await openFolderDialog()
+    await wrapper.get('.folder-dialog input[placeholder="例如：工作"]').setValue('工作')
+    await wrapper.get('.folder-choice input[type="checkbox"]').setValue(true)
+    await wrapper.get('.folder-dialog button.button-primary').trigger('click')
+    await flushLocalStorageWrites()
+    await wrapper.get('.panel-close').trigger('click')
+    await openLauncher('工作')
+    await wrapper.get('.folder-dialog footer button.button-secondary:not(.danger-action)').trigger('click')
+
+    await wrapper.get('.folder-dialog input[placeholder="例如：工作"]').setValue('未保存的名称')
+    await wrapper.get('.folder-choice input[type="checkbox"]').setValue(false)
+    await wrapper.get('.folder-dialog footer .button-secondary:not(.danger-action)').trigger('click')
+
+    expect(wrapper.get('#folder-view-title').text()).toBe('工作')
+    expect(wrapper.get('.folder-link').text()).toContain('京东商城')
+    expect(JSON.parse(localStorage.getItem('inftab.folders.v1') ?? '[]')[0].title).toBe('工作')
+  })
+
+  it('prevents adding a shortcut to multiple folders', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await openFolderDialog()
+    await wrapper.get('.folder-dialog input[placeholder="例如：工作"]').setValue('工作')
+    await wrapper.get('.folder-choice input[type="checkbox"]').setValue(true)
+    await wrapper.get('.folder-dialog button.button-primary').trigger('click')
+    await openFolderDialog()
+    await wrapper.get('.folder-dialog input[placeholder="例如：工作"]').setValue('生活')
+
+    const assignedShortcut = wrapper.findAll('.folder-choice').find((choice) => choice.text().includes('京东商城'))
+    expect(assignedShortcut?.get('input[type="checkbox"]').element).toHaveProperty('disabled', true)
+    expect(assignedShortcut?.text()).toContain('已在其他文件夹')
+  })
+
+  it('loads image compression on demand when a shortcut icon is uploaded', async () => {
+    const bitmap = { width: 400, height: 200, close: vi.fn() }
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(bitmap))
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D)
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => callback(new Blob(['webp-icon'], { type: 'image/webp' })))
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+
+    const file = new File(['source-icon'], 'icon.png', { type: 'image/png' })
+    const input = wrapper.get('.shortcut-dialog input[accept="image/png,image/jpeg,image/webp,image/gif"]')
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [file] })
+    await input.trigger('change')
+    const iconField = wrapper.get('.shortcut-dialog input[placeholder="素材文件名、图片网址或 Base64"]')
+    await vi.waitFor(() => expect((iconField.element as HTMLInputElement).value).toMatch(/^data:image\/webp;base64,/))
+
+    expect(vi.mocked(createImageBitmap)).toHaveBeenCalledOnce()
+    expect(bitmap.close).toHaveBeenCalledOnce()
+  })
+
+  it('keeps remote shortcut icons as image URLs in the extension build', async () => {
+    vi.stubGlobal('location', { protocol: 'chrome-extension:' })
+    const fetch = vi.spyOn(globalThis, 'fetch')
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await wrapper.get('input[placeholder="例如：GitHub"]').setValue('Example')
+    await wrapper.get('input[placeholder="https://example.com"]').setValue('https://example.com')
+    await wrapper.get('.shortcut-dialog input[placeholder="素材文件名、图片网址或 Base64"]').setValue('https://images.example/icon.png')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    await flushLocalStorageWrites()
+
+    expect(fetch).not.toHaveBeenCalled()
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]')).toContainEqual(expect.objectContaining({
+      title: 'Example',
+      icon: 'https://images.example/icon.png',
+    }))
+  })
+
+  it('normalizes protocol-relative shortcut icon URLs before downloading them on the website', async () => {
+    const bitmap = { width: 192, height: 192, close: vi.fn() }
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(bitmap))
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D)
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => callback(new Blob(['webp-icon'], { type: 'image/webp' })))
+    const remoteIcon = new TextEncoder().encode('remote-icon')
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers({ 'content-type': 'image/png', 'content-length': String(remoteIcon.byteLength) }),
+      body: new ReadableStream({ start: (controller) => { controller.enqueue(remoteIcon); controller.close() } }),
+    } as Response)
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await wrapper.get('input[placeholder="例如：GitHub"]').setValue('Example')
+    await wrapper.get('input[placeholder="https://example.com"]').setValue('https://example.com')
+    await wrapper.get('.shortcut-dialog input[placeholder="素材文件名、图片网址或 Base64"]').setValue('//images.example/icon.png')
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalledWith('https://images.example/icon.png', expect.objectContaining({
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+    })))
+    await vi.waitFor(() => expect(bitmap.close).toHaveBeenCalledOnce())
+    await vi.waitFor(() => expect(wrapper.find('.shortcut-dialog').exists()).toBe(false))
+    await flushLocalStorageWrites()
+    await vi.waitFor(() => expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]')).toContainEqual(expect.objectContaining({
+      title: 'Example',
+      icon: expect.stringMatching(/^data:image\/webp;base64,/),
+    })))
+    expect(bitmap.close).toHaveBeenCalledOnce()
+  })
+
+  it('restores shortcut controls after a remote icon request times out', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await wrapper.get('input[placeholder="例如：GitHub"]').setValue('Example')
+    await wrapper.get('input[placeholder="https://example.com"]').setValue('https://example.com')
+    await wrapper.get('.shortcut-dialog input[placeholder="素材文件名、图片网址或 Base64"]').setValue('https://images.example/slow.png')
+    vi.useFakeTimers()
+    vi.spyOn(globalThis, 'fetch').mockImplementation((_input, init) => new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true })
+    }))
+
+    await wrapper.get('.shortcut-dialog').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('.shortcut-dialog button[type="submit"]').element).toHaveProperty('disabled', true)
+    await vi.advanceTimersByTimeAsync(10_000)
+    await flushPromises()
+
+    expect(wrapper.get('.shortcut-dialog').text()).toContain('图标下载超时')
+    expect(wrapper.get('.shortcut-dialog button[type="submit"]').element).toHaveProperty('disabled', false)
+  })
+
+  it('restores a fresh copy of default preferences', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    const columns = wrapper.findAll('.settings-content .range-label').find((label) => label.text().includes('每行图标'))!
+    await columns.get('input').setValue('10')
+    await wrapper.findAll('.settings-content button').find((button) => button.text() === '恢复默认设置')!.trigger('click')
+    await confirmPendingAction()
+
+    expect(columns.get('input').element).toHaveProperty('value', '6')
+  })
+
+  it('keeps the selected search mode visible when its tab visibility changes', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    let newsToggle = wrapper.findAll('.settings-content .toggle-row').find((row) => row.text().trim() === '新闻')!
+    await newsToggle.get('input').setValue(true)
+    expect(wrapper.get('.search-tab[aria-pressed="true"]').text()).toBe('新闻')
+
+    newsToggle = wrapper.findAll('.settings-content .toggle-row').find((row) => row.text().trim() === '新闻')!
+    await newsToggle.get('input').setValue(false)
+    expect(wrapper.find('.search-tabs').exists()).toBe(false)
+  })
+
+  it('adds, selects, persists, and removes a custom search engine from settings', async () => {
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, visibleSearchModes: ['html', 'news'] }))
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('input[placeholder="例如：维基百科"]').setValue('Wiki')
+    await wrapper.get('input[placeholder="https://example.com/search?q={query}"]').setValue('https://example.com/search?q={query}')
+    await wrapper.get('.custom-engine-form').trigger('submit')
+    await flushLocalStorageWrites()
+
+    const savedEngines = JSON.parse(localStorage.getItem('inftab.custom-search-engines.v1') ?? '[]')
+    expect(savedEngines).toHaveLength(1)
+    expect(JSON.parse(localStorage.getItem('inftab.preferences.v1') ?? '{}').engine).toBe('custom:' + savedEngines[0].id)
+    expect(wrapper.get('.engine-initial').text()).toBe('W')
+    expect(wrapper.find('.search-tabs').exists()).toBe(false)
+
+    await wrapper.get('[aria-label="删除搜索引擎Wiki"]').trigger('click')
+    await confirmPendingAction()
+    await flushLocalStorageWrites()
+    expect(JSON.parse(localStorage.getItem('inftab.custom-search-engines.v1') ?? '[]')).toEqual([])
+    expect(JSON.parse(localStorage.getItem('inftab.preferences.v1') ?? '{}').engine).toBe('baidu')
+    expect(wrapper.get('.engine-picker').attributes('aria-label')).toContain('Baidu')
+  })
+
+  it('allows the homepage clock widget to be hidden from settings', async () => {
+    await mountApp()
+    expect(wrapper.find('.home-clock').exists()).toBe(true)
+    await openLauncher('settings')
+    const clockToggle = wrapper.findAll('.settings-content .toggle-row').find((row) => row.text().includes('显示时间和日期'))!
+    await clockToggle.get('input').setValue(false)
+
+    expect(wrapper.find('.home-clock').exists()).toBe(false)
+  })
+
+  it('runs the todo add, edit, complete, and clear flow', async () => {
+    await mountApp()
+    await openLauncher('待办事项')
+    await wrapper.get('.inline-add input').setValue('  Review release  ')
+    await wrapper.get('.inline-add').trigger('submit')
+    expect(wrapper.get('.todo-list').text()).toContain('Review release')
+
+    await wrapper.get('.todo-check').trigger('click')
+    expect(wrapper.get('.todo-list li').classes()).toContain('done')
+    await wrapper.get('.todo-list li .icon-action[aria-label=\"编辑待办\"]').trigger('click')
+    await wrapper.get('input[aria-label=\"编辑待办\"]').setValue('Ship release')
+    await wrapper.get('.todo-edit-form').trigger('submit')
+    expect(wrapper.get('.todo-list').text()).toContain('Ship release')
+
+    await wrapper.get('.todo-footer .text-button').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[role="alertdialog"]').exists()).toBe(true)
+    await confirmPendingAction()
+    expect(wrapper.find('.todo-list').exists()).toBe(false)
+    expect(wrapper.find('.empty-state').exists()).toBe(true)
+  })
+
+  it('cancels inline todo editing on Escape without closing its panel', async () => {
+    await mountApp()
+    await openLauncher('待办事项')
+    await wrapper.get('.inline-add input').setValue('保留在面板里的待办')
+    await wrapper.get('.inline-add').trigger('submit')
+    await wrapper.get('.todo-list li .icon-action[aria-label="编辑待办"]').trigger('click')
+
+    await wrapper.get('input[aria-label="编辑待办"]').trigger('keydown', { key: 'Escape' })
+
+    expect(wrapper.get('[role="dialog"]').attributes('aria-label')).toBe('待办事项')
+    expect(wrapper.find('input[aria-label="编辑待办"]').exists()).toBe(false)
+    expect(wrapper.get('.todo-list').text()).toContain('保留在面板里的待办')
+  })
+
+  it('prevents new todos and notes when their backup-safe item limit is reached', async () => {
+    localStorage.setItem('inftab.todos.v1', JSON.stringify(Array.from({ length: 500 }, (_, index) => ({
+      id: 'todo-' + index,
+      title: 'Task ' + index,
+      done: false,
+    }))))
+    localStorage.setItem('inftab.notes.v1', JSON.stringify(Array.from({ length: 500 }, (_, index) => ({
+      id: 'note-' + index,
+      title: 'Note ' + index,
+      body: '',
+      updatedAt: 1,
+    }))))
+    await mountApp()
+
+    await openLauncher('待办事项')
+    expect(wrapper.get('.inline-add input').element).toHaveProperty('disabled', true)
+    expect(wrapper.get('.todo-footer').text()).toContain('500 项上限')
+    await wrapper.get('.panel-close').trigger('click')
+
+    await openLauncher('笔记')
+    expect(wrapper.get('.note-add').element).toHaveProperty('disabled', true)
+    expect(wrapper.get('.notes-empty[role="status"]').text()).toContain('500 条笔记上限')
+  })
+
+  it('prevents adding shortcuts and folders when their backup-safe limits are reached', async () => {
+    localStorage.setItem('inftab.shortcuts.v1', JSON.stringify(Array.from({ length: 500 }, (_, index) => ({
+      id: 'shortcut-' + index,
+      title: 'Shortcut ' + index,
+      url: `https://shortcut-${index}.example/`,
+      color: '#abc',
+      mark: 'S',
+    }))))
+    localStorage.setItem('inftab.folders.v1', JSON.stringify(Array.from({ length: 500 }, (_, index) => ({
+      id: 'folder-' + index,
+      title: 'Folder ' + index,
+      shortcutIds: [],
+      color: '#abc',
+      mark: 'F',
+    }))))
+    await mountApp()
+    await openLauncher('settings')
+
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    expect(wrapper.get('.shortcut-dialog').text()).toContain('最多只能保存 500 个快捷入口')
+    expect(wrapper.get('.shortcut-dialog button[type="submit"]').element).toHaveProperty('disabled', true)
+    await wrapper.get('.shortcut-dialog button[type="button"]').trigger('click')
+
+    await openFolderDialog()
+    expect(wrapper.get('.folder-dialog').text()).toContain('最多只能保存 500 个文件夹')
+    expect(wrapper.get('.folder-dialog button.button-primary').element).toHaveProperty('disabled', true)
+  })
+
+  it('keeps the selected note stable while creating and deleting notes', async () => {
+    await mountApp()
+    await openLauncher('笔记')
+    await wrapper.get('.note-add').trigger('click')
+    await wrapper.get('input[aria-label=\"笔记标题\"]').setValue('First note')
+    await wrapper.get('textarea[aria-label=\"笔记内容\"]').setValue('Saved text')
+    await wrapper.get('.note-add').trigger('click')
+    await wrapper.get('input[aria-label=\"笔记标题\"]').setValue('Second note')
+
+    expect(wrapper.findAll('.note-list-item')).toHaveLength(2)
+    await wrapper.get('.note-delete').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('.note-list-item')).toHaveLength(2)
+    await wrapper.get('.confirm-dialog').trigger('keydown', { key: 'Escape' })
+    expect(wrapper.find('.confirm-dialog').exists()).toBe(false)
+    expect(wrapper.findAll('.note-list-item')).toHaveLength(2)
+    await wrapper.get('.note-delete').trigger('click')
+    await confirmPendingAction()
+    expect(wrapper.get('input[aria-label=\"笔记标题\"]').element).toHaveProperty('value', 'First note')
+    expect(wrapper.get('textarea[aria-label=\"笔记内容\"]').element).toHaveProperty('value', 'Saved text')
+    expect(wrapper.findAll('.note-list-item')).toHaveLength(1)
+  })
+
+  it('creates, edits, removes, and persists annual countdowns', async () => {
+    const targetDate = new Date()
+    targetDate.setDate(targetDate.getDate() + 30)
+    const dateValue = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`
+    await mountApp()
+    await openLauncher('纪念日')
+    await wrapper.get('input[aria-label="纪念日名称"]').setValue('旅行')
+    await wrapper.get('input[aria-label="纪念日日期"]').setValue(dateValue)
+    await wrapper.get('.countdown-form').trigger('submit')
+
+    expect(wrapper.get('.countdown-item').text()).toContain('还有 30 天')
+    await wrapper.get('[aria-label="编辑旅行"]').trigger('click')
+    await wrapper.get('input[aria-label="纪念日日期"]').setValue('')
+    await wrapper.get('.countdown-form').trigger('submit')
+    expect(wrapper.find('.countdown-item').exists()).toBe(true)
+
+    await wrapper.get('input[aria-label="纪念日日期"]').setValue(dateValue)
+    await wrapper.get('input[aria-label="纪念日名称"]').setValue('周年旅行')
+    await wrapper.get('select[aria-label="重复频率"]').setValue('yearly')
+    await wrapper.get('.countdown-form').trigger('submit')
+    await flushLocalStorageWrites()
+
+    const saved = JSON.parse(localStorage.getItem('inftab.countdowns.v1') ?? '[]')
+    expect(saved).toEqual([expect.objectContaining({ title: '周年旅行', date: dateValue, recurrence: 'yearly' })])
+    expect(wrapper.get('.countdown-item').text()).toContain('每年重复')
+
+    await wrapper.get('[aria-label="编辑周年旅行"]').trigger('click')
+    await wrapper.get('[aria-label="删除周年旅行"]').trigger('click')
+    await confirmPendingAction()
+    expect(wrapper.get('.countdown-form button[type="submit"]').text()).toContain('添加纪念日')
+    await flushLocalStorageWrites()
+    expect(JSON.parse(localStorage.getItem('inftab.countdowns.v1') ?? '[]')).toEqual([])
+  })
+
+  it('shows a recoverable warning when browser storage rejects a save', async () => {
+    await mountApp()
+    const originalSetItem = Storage.prototype.setItem
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
+      if (key === 'inftab.preferences.v1') throw new DOMException('Storage quota exceeded', 'QuotaExceededError')
+      return originalSetItem.call(this, key, value)
+    })
+
+    await openLauncher('settings')
+    const clockToggle = wrapper.findAll('.settings-content .toggle-row').find((row) => row.text().includes('显示时间和日期'))!
+    await clockToggle.get('input').setValue(false)
+    await flushLocalStorageWrites()
+
+    expect(setItem).toHaveBeenCalled()
+    expect(wrapper.get('.storage-error-toast').text()).toContain('本地数据未能保存')
+    await wrapper.get('.storage-error-toast button').trigger('click')
+    expect(wrapper.find('.storage-error-toast').exists()).toBe(false)
+  })
+
+  it('clears a storage warning after the failed key saves successfully', async () => {
+    const originalSetItem = Storage.prototype.setItem
+    let shouldFail = true
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key: string, value: string) {
+      if (key === 'inftab.preferences.v1' && shouldFail) throw new DOMException('Storage quota exceeded', 'QuotaExceededError')
+      return originalSetItem.call(this, key, value)
+    })
+    await mountApp()
+    await openLauncher('settings')
+    const clockToggle = wrapper.findAll('.settings-content .toggle-row').find((row) => row.text().includes('显示时间和日期'))!
+    await clockToggle.get('input').setValue(false)
+    await flushLocalStorageWrites()
+    expect(wrapper.get('.storage-error-toast').text()).toContain('本地数据未能保存')
+
+    shouldFail = false
+    await clockToggle.get('input').setValue(true)
+    await flushLocalStorageWrites()
+
+    expect(localStorage.getItem('inftab.preferences.v1')).toContain('"showClock":true')
+    expect(wrapper.find('.storage-error-toast').exists()).toBe(false)
+  })
+
+  it('previews and merges a selected backup without removing existing shortcuts', async () => {
+    localStorage.setItem('inftab.shortcuts.v1', JSON.stringify([
+      { id: 'existing', title: 'Existing', url: 'https://existing.example/', color: '#369', mark: 'E' },
+    ]))
+    await mountApp()
+    await openLauncher('settings')
+    await selectBackupFile(validBackup({
+      shortcuts: [{ id: 'imported', title: 'Imported', url: 'https://imported.example/', color: '#936', mark: 'I' }],
+      todos: [{ id: 'backup-todo', title: 'From backup', done: false }],
+    }))
+
+    expect(wrapper.get('.backup-dialog').text()).toContain('1 个快捷入口')
+    expect(wrapper.get('.backup-dialog').text()).toContain('1 条待办')
+    await wrapper.findAll('.backup-dialog button').find((button) => button.text().trim() === '合并导入')!.trigger('click')
+    await flushLocalStorageWrites()
+
+    const shortcuts = JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]')
+    const todos = JSON.parse(localStorage.getItem('inftab.todos.v1') ?? '[]')
+    expect(shortcuts.map((shortcut: { id: string }) => shortcut.id)).toEqual(expect.arrayContaining(['existing', 'imported']))
+    expect(todos).toContainEqual(expect.objectContaining({ id: 'backup-todo', title: 'From backup' }))
+    expect(wrapper.find('.backup-dialog').exists()).toBe(false)
+  })
+
+  it('rejects an over-capacity backup merge without partially importing it', async () => {
+    localStorage.setItem('inftab.shortcuts.v1', JSON.stringify(Array.from({ length: 500 }, (_, index) => ({
+      id: 'shortcut-' + index,
+      title: 'Shortcut ' + index,
+      url: `https://shortcut-${index}.example/`,
+      color: '#abc',
+      mark: 'S',
+    }))))
+    localStorage.setItem('inftab.preferences.v1', JSON.stringify({ ...defaultPreferences, showClock: true }))
+    await mountApp()
+    await openLauncher('settings')
+    await selectBackupFile(validBackup({
+      shortcuts: [{ id: 'imported', title: 'Imported', url: 'https://imported.example/', color: '#936', mark: 'I' }],
+      preferences: { ...defaultPreferences, showClock: false },
+    }))
+    await wrapper.findAll('.backup-dialog button').find((button) => button.text().trim() === '合并导入')!.trigger('click')
+    await flushLocalStorageWrites()
+
+    expect(wrapper.find('.backup-dialog').exists()).toBe(false)
+    expect(wrapper.get('.settings-content [role="alert"]').text()).toContain('快捷入口将超过数量上限')
+    expect(JSON.parse(localStorage.getItem('inftab.shortcuts.v1') ?? '[]')).toHaveLength(500)
+    expect(JSON.parse(localStorage.getItem('inftab.preferences.v1') ?? '{}').showClock).toBe(true)
+  })
+
+  it('replaces existing data only after backup confirmation and reports malformed files', async () => {
+    localStorage.setItem('inftab.todos.v1', JSON.stringify([{ id: 'old-todo', title: 'Keep me?', done: false }]))
+    await mountApp()
+    await openLauncher('settings')
+    await selectBackupFile(validBackup({ todos: [{ id: 'new-todo', title: 'Restored', done: false }] }))
+    expect(JSON.parse(localStorage.getItem('inftab.todos.v1') ?? '[]')).toContainEqual(expect.objectContaining({ id: 'old-todo' }))
+    await wrapper.findAll('.backup-dialog button').find((button) => button.text().trim() === '覆盖导入')!.trigger('click')
+    await flushLocalStorageWrites()
+
+    expect(JSON.parse(localStorage.getItem('inftab.todos.v1') ?? '[]')).toEqual([
+      { id: 'new-todo', title: 'Restored', done: false },
+    ])
+
+    await selectBackupFile('{malformed json')
+    expect(wrapper.get('.backup-error[role="alert"]').text().trim()).not.toBe('')
+    expect(wrapper.find('.backup-dialog').exists()).toBe(false)
+  })
+
+  it('keeps keyboard focus inside the backup prompt and closes only that prompt on Escape', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await selectBackupFile(validBackup())
+
+    expect(document.activeElement).toBe(wrapper.get('.backup-dialog [aria-label="取消导入"]').element)
+    const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    document.activeElement!.dispatchEvent(escape)
+    await nextTick()
+    await flushPromises()
+
+    expect(escape.defaultPrevented).toBe(true)
+    expect(wrapper.find('.backup-dialog').exists()).toBe(false)
+    expect(wrapper.get('.side-panel[role="dialog"]').text()).toContain('设置')
+    expect(document.activeElement).toBe(wrapper.get('.import-backup-button').element)
+  })
+
+  it('focuses the shortcut name on desktop and avoids opening a mobile keyboard', async () => {
+    await mountApp()
+    await openLauncher('settings')
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await flushPromises()
+
+    expect(document.activeElement).toBe(wrapper.get('.shortcut-dialog input[placeholder="例如：GitHub"]').element)
+    await wrapper.get('.shortcut-dialog button[aria-label="关闭"]').trigger('click')
+
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }))
+    await wrapper.get('.settings-add-shortcut').trigger('click')
+    await flushPromises()
+
+    expect(document.activeElement).toBe(wrapper.get('.shortcut-dialog button[aria-label="关闭"]').element)
+  })
+})

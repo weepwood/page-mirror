@@ -1,0 +1,111 @@
+import type { CustomSearchEngine, EngineId, SearchEngineSelection, SearchMode } from '../types'
+
+const templates: Record<EngineId, Record<SearchMode, string>> = {
+  baidu: {
+    html: 'https://www.baidu.com/s?wd={query}',
+    photos: 'https://image.baidu.com/search/index?tn=baiduimage&word={query}',
+    news: 'https://www.baidu.com/s?tn=news&word={query}',
+    videos: 'https://haokan.baidu.com/web/search/page?query={query}',
+    map: 'https://map.baidu.com/search/{query}',
+  },
+  google: {
+    html: 'https://www.google.com/search?q={query}',
+    photos: 'https://www.google.com/search?tbm=isch&q={query}',
+    news: 'https://www.google.com/search?tbm=nws&q={query}',
+    videos: 'https://www.google.com/search?tbm=vid&q={query}',
+    map: 'https://www.google.com/maps/search/{query}',
+  },
+  bing: {
+    html: 'https://www.bing.com/search?q={query}',
+    photos: 'https://www.bing.com/images/search?q={query}',
+    news: 'https://www.bing.com/news/search?q={query}',
+    videos: 'https://www.bing.com/videos/search?q={query}',
+    map: 'https://www.bing.com/maps?q={query}',
+  },
+  duckduckgo: {
+    html: 'https://duckduckgo.com/?q={query}',
+    photos: 'https://duckduckgo.com/?q={query}&iax=images&ia=images',
+    news: 'https://duckduckgo.com/?q={query}&iar=news&ia=news',
+    videos: 'https://duckduckgo.com/?q={query}&iax=videos&ia=videos',
+    map: 'https://duckduckgo.com/?q={query}&iaxm=maps&ia=maps',
+  },
+  sogou: {
+    html: 'https://www.sogou.com/sogou?query={query}',
+    photos: 'https://pic.sogou.com/pics?query={query}',
+    news: 'https://news.sogou.com/news?query={query}',
+    videos: 'https://v.sogou.com/v?query={query}',
+    map: 'https://map.sogou.com/#city=%E5%85%A8%E5%9B%BD&query={query}',
+  },
+  yahoo: {
+    html: 'https://search.yahoo.com/search?p={query}',
+    photos: 'https://images.search.yahoo.com/search/images?p={query}',
+    news: 'https://news.search.yahoo.com/search?p={query}',
+    videos: 'https://video.search.yahoo.com/search/video?p={query}',
+    map: 'https://maps.yahoo.com/place/?q={query}',
+  },
+  '360': {
+    html: 'https://www.so.com/s?q={query}',
+    photos: 'https://image.so.com/i?q={query}',
+    news: 'https://news.so.com/ns?q={query}',
+    videos: 'https://video.so.com/v?q={query}',
+    map: 'https://ditu.so.com/?k={query}',
+  },
+}
+export function isValidCustomSearchTemplate(template: string) {
+  if (typeof template !== 'string' || template.length > 500 || !template.includes('{query}')) return false
+  try {
+    const destination = new URL(template.replaceAll('{query}', 'search-test'))
+    const templateOrigin = new URL(template.replaceAll('{query}', ''))
+    return destination.protocol === 'https:'
+      && templateOrigin.protocol === 'https:'
+      && destination.origin === templateOrigin.origin
+      && !destination.username && !destination.password
+      && !templateOrigin.username && !templateOrigin.password
+  } catch {
+    return false
+  }
+}
+
+function toWellFormedUnicode(value: string) {
+  let result = ''
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index)
+    if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+      const nextCodeUnit = value.charCodeAt(index + 1)
+      if (nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff) {
+        result += value[index] + value[index + 1]
+        index += 1
+      } else {
+        result += '\ufffd'
+      }
+    } else if (codeUnit >= 0xdc00 && codeUnit <= 0xdfff) {
+      result += '\ufffd'
+    } else {
+      result += value[index]
+    }
+  }
+  return result
+}
+
+export function encodeQuery(value: string) {
+  try {
+    return encodeURIComponent(value)
+  } catch {
+    return encodeURIComponent(toWellFormedUnicode(value))
+  }
+}
+
+export function buildSearchUrl(engine: SearchEngineSelection, mode: SearchMode, value: string, customEngines: CustomSearchEngine[] = []): string {
+  if (typeof value !== 'string' || typeof engine !== 'string') return ''
+  const query = value.trim()
+  if (!query) return ''
+  const encodedQuery = encodeQuery(query)
+  if (engine.startsWith('custom:')) {
+    const customEngine = customEngines.find((item) => `custom:${item.id}` === engine)
+    return customEngine && isValidCustomSearchTemplate(customEngine.template)
+      ? customEngine.template.replaceAll('{query}', encodedQuery)
+      : ''
+  }
+  const template = templates[engine as EngineId]?.[mode]
+  return template ? template.replace('{query}', encodedQuery) : ''
+}

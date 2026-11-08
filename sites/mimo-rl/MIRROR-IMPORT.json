@@ -1,0 +1,8 @@
+{
+  "repository": "weepwood/mimo-mirror",
+  "branch": "main",
+  "commit": "0c672e3eec59f0ab0ca1efbc33b408fb15892029",
+  "importedAt": "2026-10-09",
+  "kind": "static",
+  "note": "从公开仓库导入；本目录后续由 page-mirror 维护。"
+}

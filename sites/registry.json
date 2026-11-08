@@ -10,7 +10,13 @@
       "previewPath": "sites/arc-crm/",
       "readme": "sites/arc-crm/README.md",
       "updatedAt": "2026-10-24",
-      "sourceRepository": "weepwood/arc-crm-mirror"
+      "sourceRepository": "weepwood/arc-crm-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "next.js",
+        "dashboard",
+        "static-snapshot"
+      ]
     },
     {
       "slug": "artcraft-apps",
@@ -20,7 +26,12 @@
       "status": "review",
       "previewPath": "sites/artcraft-apps/",
       "readme": "sites/artcraft-apps/README.md",
-      "updatedAt": "2026-10-09"
+      "updatedAt": "2026-10-09",
+      "kind": "original",
+      "tags": [
+        "gallery",
+        "original"
+      ]
     },
     {
       "slug": "bencho",
@@ -31,7 +42,13 @@
       "previewPath": "sites/bencho/",
       "readme": "sites/bencho/README.md",
       "updatedAt": "2026-10-24",
-      "sourceRepository": "weepwood/bencho-mirror"
+      "sourceRepository": "weepwood/bencho-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "components",
+        "gallery",
+        "static-snapshot"
+      ]
     },
     {
       "slug": "ccunpacked",
@@ -42,7 +59,12 @@
       "previewPath": "sites/ccunpacked/",
       "readme": "sites/ccunpacked/README.md",
       "updatedAt": "2026-07-09",
-      "sourceRepository": "weepwood/ccunpacked-replica"
+      "sourceRepository": "weepwood/ccunpacked-replica",
+      "kind": "snapshot",
+      "tags": [
+        "astro",
+        "documentation"
+      ]
     },
     {
       "slug": "chaz-5310",
@@ -53,7 +75,13 @@
       "previewPath": "sites/chaz-5310/",
       "readme": "sites/chaz-5310/README.md",
       "updatedAt": "2026-07-09",
-      "sourceRepository": "weepwood/chaz-5310-mirror"
+      "sourceRepository": "weepwood/chaz-5310-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "three.js",
+        "webgl",
+        "3d"
+      ]
     },
     {
       "slug": "feralui",
@@ -64,7 +92,12 @@
       "previewPath": "sites/feralui/",
       "readme": "sites/feralui/README.md",
       "updatedAt": "2026-07-16",
-      "sourceRepository": "weepwood/feralui"
+      "sourceRepository": "weepwood/feralui",
+      "kind": "snapshot",
+      "tags": [
+        "static-html",
+        "spa"
+      ]
     },
     {
       "slug": "firewood",
@@ -75,7 +108,13 @@
       "previewPath": "sites/firewood/",
       "readme": "sites/firewood/README.md",
       "updatedAt": "2026-07-09",
-      "sourceRepository": "weepwood/firewood-mirror"
+      "sourceRepository": "weepwood/firewood-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "three.js",
+        "webgl",
+        "interactive"
+      ]
     },
     {
       "slug": "google-homepage",
@@ -86,7 +125,12 @@
       "previewPath": "sites/google-homepage/",
       "readme": "sites/google-homepage/README.md",
       "updatedAt": "2026-07-10",
-      "sourceRepository": "weepwood/google-homepage-mirror"
+      "sourceRepository": "weepwood/google-homepage-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "static-html",
+        "landing-page"
+      ]
     },
     {
       "slug": "holo",
@@ -96,7 +140,12 @@
       "status": "building",
       "previewPath": "sites/holo/",
       "readme": "sites/holo/README.md",
-      "updatedAt": "2026-10-09"
+      "updatedAt": "2026-10-09",
+      "kind": "original",
+      "tags": [
+        "landing-page",
+        "original"
+      ]
     },
     {
       "slug": "icon-museum",
@@ -107,7 +156,12 @@
       "previewPath": "sites/icon-museum/",
       "readme": "sites/icon-museum/README.md",
       "updatedAt": "2026-07-10",
-      "sourceRepository": "weepwood/icon-museum-mirror"
+      "sourceRepository": "weepwood/icon-museum-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "gallery",
+        "icons"
+      ]
     },
     {
       "slug": "inftab",
@@ -117,7 +171,12 @@
       "status": "building",
       "previewPath": "sites/inftab/",
       "readme": "sites/inftab/README.md",
-      "updatedAt": "2026-10-10"
+      "updatedAt": "2026-10-10",
+      "kind": "original",
+      "tags": [
+        "browser-extension",
+        "original"
+      ]
     },
     {
       "slug": "inftab-app",
@@ -128,7 +187,13 @@
       "previewPath": "sites/inftab-app/",
       "readme": "sites/inftab-app/README.md",
       "updatedAt": "2026-10-16",
-      "sourceRepository": "weepwood/inftab-mirror"
+      "sourceRepository": "weepwood/inftab-mirror",
+      "kind": "source",
+      "tags": [
+        "vue",
+        "vite",
+        "browser-extension"
+      ]
     },
     {
       "slug": "makemepulse-2019",
@@ -139,7 +204,12 @@
       "previewPath": "sites/makemepulse-2019/",
       "readme": "sites/makemepulse-2019/README.md",
       "updatedAt": "2026-07-09",
-      "sourceRepository": "weepwood/makemepulse-2019-mirror"
+      "sourceRepository": "weepwood/makemepulse-2019-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "webgl",
+        "interactive"
+      ]
     },
     {
       "slug": "mimo-rl",
@@ -150,7 +220,12 @@
       "previewPath": "sites/mimo-rl/",
       "readme": "sites/mimo-rl/README.md",
       "updatedAt": "2026-10-09",
-      "sourceRepository": "weepwood/mimo-mirror"
+      "sourceRepository": "weepwood/mimo-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "data-viz",
+        "static-snapshot"
+      ]
     },
     {
       "slug": "opencode-data",
@@ -161,7 +236,12 @@
       "previewPath": "sites/opencode-data/",
       "readme": "sites/opencode-data/README.md",
       "updatedAt": "2026-07-09",
-      "sourceRepository": "weepwood/opencode-data-mirror"
+      "sourceRepository": "weepwood/opencode-data-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "data-viz",
+        "solidstart"
+      ]
     },
     {
       "slug": "outlier-portfolio",
@@ -172,7 +252,12 @@
       "previewPath": "sites/outlier-portfolio/",
       "readme": "sites/outlier-portfolio/README.md",
       "updatedAt": "2026-10-24",
-      "sourceRepository": "weepwood/outlier-portfolio"
+      "sourceRepository": "weepwood/outlier-portfolio",
+      "kind": "snapshot",
+      "tags": [
+        "dashboard",
+        "spa"
+      ]
     },
     {
       "slug": "planes-react",
@@ -183,7 +268,13 @@
       "previewPath": "sites/planes-react/",
       "readme": "sites/planes-react/README.md",
       "updatedAt": "2026-10-25",
-      "sourceRepository": "weepwood/planes-react-clone"
+      "sourceRepository": "weepwood/planes-react-clone",
+      "kind": "build",
+      "tags": [
+        "react",
+        "vite",
+        "documentation"
+      ]
     },
     {
       "slug": "pnpm-io",
@@ -194,7 +285,12 @@
       "previewPath": "sites/pnpm-io/",
       "readme": "sites/pnpm-io/README.md",
       "updatedAt": "2026-10-09",
-      "sourceRepository": "weepwood/pnpm-io-mirror"
+      "sourceRepository": "weepwood/pnpm-io-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "landing-page",
+        "documentation"
+      ]
     },
     {
       "slug": "railcode",
@@ -205,7 +301,12 @@
       "previewPath": "sites/railcode/",
       "readme": "sites/railcode/README.md",
       "updatedAt": "2026-10-20",
-      "sourceRepository": "weepwood/railcode-mirror"
+      "sourceRepository": "weepwood/railcode-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "landing-page",
+        "static-html"
+      ]
     },
     {
       "slug": "shaders",
@@ -216,7 +317,13 @@
       "previewPath": "sites/shaders/",
       "readme": "sites/shaders/README.md",
       "updatedAt": "2026-10-24",
-      "sourceRepository": "weepwood/shaders-mirror"
+      "sourceRepository": "weepwood/shaders-mirror",
+      "kind": "snapshot",
+      "tags": [
+        "nuxt",
+        "webgpu",
+        "webgl"
+      ]
     },
     {
       "slug": "weread",
@@ -226,7 +333,12 @@
       "status": "building",
       "previewPath": "sites/weread/",
       "readme": "sites/weread/README.md",
-      "updatedAt": "2026-10-11"
+      "updatedAt": "2026-10-11",
+      "kind": "original",
+      "tags": [
+        "landing-page",
+        "original"
+      ]
     },
     {
       "slug": "zcode-website",
@@ -237,7 +349,12 @@
       "previewPath": "sites/zcode-website/",
       "readme": "sites/zcode-website/README.md",
       "updatedAt": "2026-10-24",
-      "sourceRepository": "weepwood/zcode-website-clone"
+      "sourceRepository": "weepwood/zcode-website-clone",
+      "kind": "snapshot",
+      "tags": [
+        "static-html",
+        "landing-page"
+      ]
     },
     {
       "slug": "zhheo-blog",
@@ -248,7 +365,13 @@
       "previewPath": "sites/zhheo-blog/",
       "readme": "sites/zhheo-blog/README.md",
       "updatedAt": "2026-08-04",
-      "sourceRepository": "weepwood/zhheo-blog-clone"
+      "sourceRepository": "weepwood/zhheo-blog-clone",
+      "kind": "build",
+      "tags": [
+        "next.js",
+        "react",
+        "blog"
+      ]
     }
   ]
 }

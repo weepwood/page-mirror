@@ -50,12 +50,13 @@
 
 ## 5. 登记与部署
 
-1. 更新 `sites/registry.json`。
+1. 更新 `sites/registry.json`（含 `kind`、`tags`、`updatedAt`）。
 2. 更新站点的 `README.md` 和验收清单。
-3. 运行 `node scripts/validate-registry.mjs`。
-4. 提交代码并检查 GitHub Actions。
-5. 检查 GitHub Pages 线上预览地址，特别确认项目子路径下的静态资源。
+3. 运行 `npm run check` 与 `npm run audit:links`，把 [链接健康报告](link-audit.md) 中的差异登记进站点 README。
+4. 提交代码并检查 GitHub Actions（触发路径互斥，单次提交只部署一次）。
+5. 检查 GitHub Pages 线上预览地址，特别确认项目子路径下的静态资源，以及 `404.html`、`robots.txt`、`sitemap.xml` 是否随产物发布。
 6. 若线上验证失败，状态保持 `review` 或 `building`，修复后再验收。
+7. 状态流转与证据模板见 [验收 SOP](acceptance.md)。
 
 ## 6. 每个站点的交付记录
 

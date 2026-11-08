@@ -35,6 +35,8 @@ sites/
 - `previewPath`：可选；相对于主站根目录的预览路径。默认是 `sites/<slug>/`。
 - `readme`：可选；项目说明路径，默认是 `sites/<slug>/README.md`。
 - `updatedAt`：可选；最后更新日期，格式为 `YYYY-MM-DD`。
+- `kind`：必填；站点来源分类，见下方「分类与来源记录」。
+- `tags`：必填；1-4 个不重复的小写标签（字母、数字与 `.` `+` `-`），用于目录展示技术栈与主题。
 
 示例：
 
@@ -50,11 +52,26 @@ sites/
       "status": "building",
       "previewPath": "sites/example/",
       "readme": "sites/example/README.md",
-      "updatedAt": "2026-10-09"
+      "updatedAt": "2026-10-09",
+      "kind": "snapshot",
+      "tags": ["static-html", "landing-page"]
     }
   ]
 }
 ```
+
+## 分类与来源记录
+
+`kind` 的四种取值：
+
+| 值 | 含义 | 典型特征 |
+| --- | --- | --- |
+| `snapshot` | 直接复制的静态快照 | 有 `MIRROR-IMPORT.json`，无 `reference/source/` |
+| `build` | 导入前在本地构建出的静态产物 | 有 `reference/source/` 保存完整源码 |
+| `source` | 部署期才构建的源码型项目 | 登记在 `mirror-sources.json` 且为 Vite |
+| `original` | 本仓库直接维护或从头复刻的项目 | 无外部导入来源 |
+
+有 `sourceRepository` 的站点必须同时具备 `MIRROR-IMPORT.json`，记录来源仓库、分支、原提交 SHA 与导入日期。`artcraft-apps`、`holo`、`inftab`、`weread` 属于 `original`：它们没有从其他仓库导入，因此没有这两个字段，这是预期状态而非缺失。自动导入器会为新站点写入默认 `kind` 与 `tags`，批量导入后应按实际技术栈补充标签。
 
 ## 独立性
 

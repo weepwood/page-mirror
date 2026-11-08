@@ -2,6 +2,10 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 
 export const STATUSES = new Set(['planned', 'building', 'review', 'completed', 'paused']);
+// snapshot = copied static snapshot, build = built locally before import,
+// source = built at deploy time, original = maintained directly in this repo.
+export const KINDS = new Set(['snapshot', 'build', 'source', 'original']);
+const TAG = /^[a-z0-9][a-z0-9.+-]*$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SOURCE_REPO = /^weepwood\/[A-Za-z0-9._-]+$/;
 const SHA = /^[0-9a-f]{40}$/i;
@@ -64,6 +68,14 @@ export function collectRegistryErrors(data, root) {
     }
     if (!STATUSES.has(site.status)) {
       fail(`[${label}] status 必须是 ${[...STATUSES].join(', ')} 之一`);
+    }
+    if (!KINDS.has(site.kind)) {
+      fail(`[${label}] kind 必须是 ${[...KINDS].join(', ')} 之一`);
+    }
+    if (!Array.isArray(site.tags) || site.tags.length < 1 || site.tags.length > 4 ||
+        site.tags.some(tag => typeof tag !== 'string' || tag.length > 24 || !TAG.test(tag)) ||
+        new Set(site.tags).size !== site.tags.length) {
+      fail(`[${label}] tags 需为 1-4 个不重复的小写标签（字母、数字与 . + -）`);
     }
     if (site.updatedAt && !DATE.test(site.updatedAt)) {
       fail(`[${label}] updatedAt 应使用 YYYY-MM-DD 格式`);

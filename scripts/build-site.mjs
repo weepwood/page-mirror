@@ -4,6 +4,7 @@ import { execFileSync, execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { loadSources, root } from './mirror-config.mjs';
 import { shouldPublish } from './site-assets.mjs';
+import { buildSitemap, resolveHomepage } from './sitemap.mjs';
 
 const out = resolve(root, '.site-build');
 const registryPath = resolve(root, 'sites/registry.json');
@@ -64,7 +65,14 @@ function rewriteLocalAssetUrls(siteRoot) {
 // Full builds wipe the output; targeted builds keep the other sites intact.
 if (!only) rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, 'sites'), { recursive: true });
-cpSync(resolve(root, 'index.html'), join(out, 'index.html'));
+// Root-level Pages assets: a custom 404, crawler hints, a static favicon and the
+// sitemap generated from the registry (never maintained by hand).
+for (const file of ['index.html', '404.html', 'robots.txt', 'favicon.svg']) {
+  cpSync(resolve(root, file), join(out, file));
+}
+const homepage = resolveHomepage(root);
+const sitemap = buildSitemap(registry, homepage);
+writeFileSync(join(out, 'sitemap.xml'), sitemap);
 cpSync(registryPath, join(out, 'sites/registry.json'));
 writeFileSync(join(out, '.nojekyll'), '');
 
@@ -104,6 +112,7 @@ for (const site of registry.sites) {
 
 const missing = only ? registry.sites.filter(site => !existsSync(join(out, 'sites', site.slug, 'index.html'))) : [];
 console.log(`部署目录已生成：${out}；本次构建 ${built}/${registry.sites.length} 个站点` + (only ? `（--only=${only.join(',')}）` : '（全量）'));
+console.log(`sitemap.xml：${registry.sites.length + 1} 个 URL（根目录 + ${registry.sites.length} 个站点），base=${homepage}`);
 if (missing.length) {
   console.warn(`注意：另有 ${missing.length} 个站点未包含在当前产物中，部署前请运行不带 --only 的全量构建。`);
 }

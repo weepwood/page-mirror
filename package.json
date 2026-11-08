@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "description": "独立网站镜像项目的统一管理仓库与 GitHub Pages 目录",
+  "homepage": "https://weepwood.github.io/page-mirror/",
   "scripts": {
     "validate": "node scripts/mirror-config.mjs && node scripts/validate-registry.mjs",
     "test": "node --test tests/*.test.mjs",
     "build": "node scripts/build-site.mjs",
+    "audit:links": "node scripts/audit-links.mjs",
     "import:mirrors": "node scripts/import-mirrors.mjs",
     "add-mirror": "node scripts/add-mirror.mjs",
     "check": "npm run validate && npm test && npm run build"

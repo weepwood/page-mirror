@@ -7,6 +7,9 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - '404.html'
+      - 'robots.txt'
+      - 'favicon.svg'
       - 'package.json'
       - 'sites/**'
       - '!sites/mirror-sources.json'
@@ -17,6 +20,9 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - '404.html'
+      - 'robots.txt'
+      - 'favicon.svg'
       - 'package.json'
       - 'sites/**'
       - '!sites/mirror-sources.json'
@@ -38,8 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -52,7 +58,7 @@ jobs:
         run: npm run build
       - name: Upload site build artifact for deployment
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: page-mirror-build
           path: .site-build/
@@ -68,9 +74,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Download site build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: page-mirror-build
           path: .site-build

@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectRegistryErrors, STATUSES } from '../scripts/registry-rules.mjs';
+import { collectRegistryErrors, STATUSES, KINDS } from '../scripts/registry-rules.mjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const GOOD_MARKER = {
@@ -18,7 +18,7 @@ function setup({ site = {}, index = true, readme = true, marker } = {}) {
     slug: 'demo', name: 'Demo', description: 'Demo site',
     sourceUrl: 'https://example.com/', status: 'review',
     previewPath: 'sites/demo/', readme: 'sites/demo/README.md',
-    updatedAt: '2026-11-08', ...site,
+    updatedAt: '2026-11-08', kind: 'snapshot', tags: ['static-html'], ...site,
   };
   const dir = join(root, 'sites', entry.slug);
   mkdirSync(dir, { recursive: true });
@@ -87,6 +87,23 @@ test('导入记录缺失或不一致会被捕获', () => {
   expectError({ site: { sourceRepository: GOOD_MARKER.repository }, marker: '{bad json' }, '不是有效 JSON');
 });
 
-test('状态枚举覆盖全部合法值', () => {
+test('状态与分类枚举覆盖全部合法值', () => {
   assert.deepEqual([...STATUSES].sort(), ['building', 'completed', 'paused', 'planned', 'review']);
+  assert.deepEqual([...KINDS].sort(), ['build', 'original', 'snapshot', 'source']);
+});
+
+test('拒绝非法 kind 与不合规 tags', () => {
+  expectError({ site: { kind: 'mirror' } }, 'kind');
+  expectError({ site: { tags: [] } }, 'tags');
+  expectError({ site: { tags: ['a', 'a'] } }, 'tags');
+  expectError({ site: { tags: ['Bad Tag'] } }, 'tags');
+  expectError({ site: { tags: ['a', 'b', 'c', 'd', 'e'] } }, 'tags');
+});
+
+test('真实仓库每个站点都带分类与标签', () => {
+  const data = JSON.parse(readFileSync(resolve(projectRoot, 'sites/registry.json'), 'utf8'));
+  for (const site of data.sites) {
+    assert.ok(KINDS.has(site.kind), site.slug + ' 缺少合法 kind');
+    assert.ok(Array.isArray(site.tags) && site.tags.length > 0, site.slug + ' 缺少 tags');
+  }
 });

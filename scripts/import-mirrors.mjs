@@ -76,7 +76,9 @@ try {
       description: item.description, status: 'review',
       previewPath: 'sites/' + item.slug + '/',
       readme: 'sites/' + item.slug + '/README.md',
-      updatedAt: date, sourceRepository: item.repository
+      updatedAt: date, sourceRepository: item.repository,
+      kind: item.kind === 'vite' ? 'source' : 'snapshot',
+      tags: item.kind === 'vite' ? ['vite', 'auto-imported'] : ['static-snapshot', 'auto-imported']
     };
     if (idx < 0) registry.sites.push(entry);
     else registry.sites[idx] = { ...entry, ...registry.sites[idx], updatedAt: date, sourceRepository: item.repository };

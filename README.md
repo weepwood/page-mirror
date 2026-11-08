@@ -10,15 +10,20 @@ https://weepwood.github.io/page-mirror/
 
 ## 核心结构
 
-- sites/registry.json：站点展示目录及验收状态。
+- sites/registry.json：站点展示目录、分类标签及验收状态。
 - sites/mirror-sources.json：**公开**旧仓库的一次性迁移配置；未来可按需继续添加。
-- sites/<slug>/：独立镜像的源码、静态资源、字体与图片。
+- sites/\<slug\>/：独立镜像的源码、静态资源、字体与图片。
 - scripts/import-mirrors.mjs：克隆公开源仓库并复制完整代码、记录迁移 SHA。
 - scripts/build-site.mjs：按站点类型独立构建，输出 .site-build/；支持 `--only=<slug>` 只重建单个站点。
 - scripts/site-assets.mjs：发布过滤与敏感文件规则，供导入器和构建脚本共用。
 - scripts/registry-rules.mjs：站点清单校验的单一真源，供校验脚本与测试共用。
-- scripts/validate-registry.mjs：校验站点目录、路径、状态与导入记录一致性。
-- tests/：清单规则、发布过滤与迁移记录一致性测试。
+- scripts/validate-registry.mjs：校验站点目录、路径、状态、分类与导入记录一致性。
+- scripts/audit-links.mjs：扫描发布产物的链接健康并生成报告（只诊断，不改镜像 HTML）。
+- scripts/sitemap.mjs：从 registry 生成 sitemap.xml，URL 基准取 package.json 的 `homepage`。
+- index.html / 404.html / robots.txt / favicon.svg：站点目录与全局发布页面。
+- tests/：清单规则、发布过滤、首页与全局页面、sitemap 与链接扫描测试。
+- docs/link-audit.md：链接健康基线报告（自动生成，请勿手改）。
+- docs/acceptance.md：站点验收 SOP 与状态流转规则。
 - .github/workflows/sync-mirrors.yml：首次同步及可选人工重新导入。
 - .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布；其 push 路径与同步工作流互斥，避免同一提交重复部署。
 
@@ -38,11 +43,24 @@ https://weepwood.github.io/page-mirror/
 - 这批仓库**不登记**到 `sites/mirror-sources.json`，因此自动导入 Action 不会重复克隆，也不会放宽「私有源禁止自动导入」的边界。
 - 迁入后源码与第三方站点素材已随公开仓库及 GitHub Pages 对外可见；上游字体、图片、商标与交互代码的许可仍需逐站核对，详见 [镜像迁移说明](docs/mirror-import.md)。
 
+## 站点分类
+
+`registry.json` 每个站点都有 `kind` 与 `tags`，由 `scripts/registry-rules.mjs` 强制校验：
+
+| kind | 含义 | 数量 |
+| --- | --- | ---: |
+| `snapshot` | 直接复制的静态快照 | 16 |
+| `build` | 导入前在本地构建出的静态产物 | 2 |
+| `source` | 部署期才构建的 Vite 源码 | 1 |
+| `original` | 本仓库直接维护或从头复刻 | 4 |
+
+`artcraft-apps`、`holo`、`inftab`、`weread` 没有外部导入来源，因此没有 `sourceRepository` 与 `MIRROR-IMPORT.json`，这是预期状态而非缺失。自动导入器会为新站点写入默认分类与标签。首页卡片展示分类与最多两个技术标签，字段规范见 [镜像子项目规范](docs/site-guidelines.md)。
+
 ## 添加新镜像
 
     node scripts/add-mirror.mjs --slug=demo --repo=weepwood/demo-mirror --name=Demo --sourceUrl=https://example.com/
 
-普通静态网页无需改动中央部署流程；Vue/Vite 的镜像加上 --kind=vite。提交配置后 GitHub Actions 会完成首次导入，之后直接修改本仓库内 sites/<slug>/。若无需从其他仓库导入，可复制 sites/_template/ 并更新 registry.json。
+普通静态网页无需改动中央部署流程；Vue/Vite 的镜像加上 --kind=vite。提交配置后 GitHub Actions 会完成首次导入，之后直接修改本仓库内 sites/\<slug\>/。若无需从其他仓库导入，可复制 sites/_template/ 并更新 registry.json。
 
 ## 开发与验证
 
@@ -52,12 +70,21 @@ https://weepwood.github.io/page-mirror/
     npm test                             # 单元测试
     npm run build                        # 全量构建 .site-build/
     npm run build -- --only=feralui      # 仅重建单个站点，保留其余产物
+    npm run audit:links                  # 扫描产物链接健康并刷新 docs/link-audit.md
     npm run check                        # validate + test + build
 
-构建时只把浏览器资源复制进 `.site-build/`；规则集中在 `scripts/site-assets.mjs`：`MIRROR-IMPORT.json`、`package*.json`、本地服务/采集脚本（`server.js`、`shot*.js` 等）、凭据文件、sourcemap 与 `reference/` 源码都不会发布。
+构建时只把浏览器资源复制进 `.site-build/sites/<slug>/`，并在产物根目录发布 `404.html`、`robots.txt`、`favicon.svg` 与由 registry 生成的 `sitemap.xml`（当前 24 个 URL）；规则集中在 `scripts/site-assets.mjs`：`MIRROR-IMPORT.json`、`package*.json`、本地服务/采集脚本（`server.js`、`shot*.js` 等）、凭据文件、sourcemap 与 `reference/` 源码都不会发布。
+
+`npm run audit:links` 不纳入 `npm run check`：它会写入报告文件，适合验收前手动运行并提交结果。
+
+## 链接策略
+
+镜像快照通常只收录原站首页，站内导航仍指向原站根路径。经确认，**不自动改写镜像 HTML**：构建脚本只把本地确实存在的根绝对资源重写为相对路径，其余引用统一登记在自动生成的 [链接健康报告](docs/link-audit.md)。
+
+基线（2026-11-08）：636 处根绝对引用中 543 处为快照未收录的站内路由、6 处为上游快照缺失资源、87 处已适配，本地相对资源缺失 0。具体数字随产物变化，以报告为准；逐站处理规则见 [验收 SOP](docs/acceptance.md)。
 
 详细安全边界、导入模式、私有镜像与发布验证参阅 [镜像迁移说明](docs/mirror-import.md)。完整设计对照与治理规范见 docs/。
 
 ## 验收与来源
 
-新导入镜像默认标记 review，必须自行确认静态资源、相对路径、交互、浏览器错误、移动端表现及相关授权后，才可标记 completed。镜像属于个人学习和研究，站点的第三方版权、商标和素材授权仍归原权利人。
+新导入镜像默认标记 review，必须按 [验收 SOP](docs/acceptance.md) 完成自动检查、线上可达性与人工对照后，才可标记 completed。镜像属于个人学习和研究，站点的第三方版权、商标和素材授权仍归原权利人。

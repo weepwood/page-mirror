@@ -6,6 +6,13 @@
   <meta name="theme-color" content="#101114">
   <meta name="description" content="Page Mirror — 独立网站复刻项目目录">
   <title>Page Mirror — 网站镜像目录</title>
+  <link rel="canonical" href="https://weepwood.github.io/page-mirror/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Page Mirror">
+  <meta property="og:title" content="Page Mirror — 网站镜像目录">
+  <meta property="og:description" content="统一管理独立网站复刻项目的目录，每个站点单独实现、单独维护、单独验收。">
+  <meta property="og:url" content="https://weepwood.github.io/page-mirror/">
+  <meta name="twitter:card" content="summary">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23b9f36a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='Arial,sans-serif' font-size='18' font-weight='700' fill='%23111410'%3EP%3C/text%3E%3C/svg%3E">
   <style>
     /* Design constraints — Refactoring UI
@@ -95,6 +102,9 @@
     .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
     .card h3{font-size:var(--fs-xl);line-height:1.2;letter-spacing:-.03em;font-weight:var(--fw-strong);margin:var(--sp-5) 0 var(--sp-2)}
     .card p{margin:0;color:var(--text-2);font-size:var(--fs-sm);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:var(--sp-3)}
+    .tag{font-size:var(--fs-xs);line-height:1.4;padding:2px var(--sp-2);border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface-1);color:var(--text-3);white-space:nowrap}
+    .tag--kind{color:var(--text-2);border-color:var(--line-strong)}
     .cardbottom{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin-top:auto;padding-top:var(--sp-5);font-size:var(--fs-xs);color:var(--text-3)}
     .meta{display:flex;align-items:baseline;gap:var(--sp-2);min-width:0}
     .origin{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -188,6 +198,7 @@
     const sort = document.querySelector('#sort');
     const filters = document.querySelector('#filters');
     const labels = {planned:'计划中',building:'复刻中',review:'待验收',completed:'已验收',paused:'已暂停'};
+    const kindLabels = {snapshot:'静态快照',build:'源码构建',source:'源码站点',original:'自有项目'};
     const tones = {completed:'success',building:'warning'};
     const statusOrder = ['building','review','completed','planned','paused'];
     let sites = [], statusFilter = 'all', sortBy = 'slug';
@@ -236,7 +247,8 @@
         const href=s.previewPath||('sites/'+encodeURIComponent(s.slug)+'/');
         const status=s.status||'planned';
         const tone=tones[status]||'neutral';
-        return '<a class="card" href="'+esc(href)+'"><div class="cardtop"><span class="slug">'+esc(s.slug)+'</span><span class="status" data-tone="'+tone+'"><span class="dot" aria-hidden="true"></span>'+esc(labels[status]||status)+'</span></div><h3>'+esc(s.name||s.slug)+'</h3><p>'+esc(s.description||'尚未填写项目说明。')+'</p><div class="cardbottom"><span class="meta"><span class="origin">'+esc(s.sourceUrl||'原站地址待补充')+'</span>'+(s.updatedAt?'<span class="date">'+esc(s.updatedAt)+'</span>':'')+'</span><span class="arrow" aria-hidden="true">↗</span></div></a>';
+        const tagHtml='<div class="tags"><span class="tag tag--kind">'+esc(kindLabels[s.kind]||s.kind||'未分类')+'</span>'+(Array.isArray(s.tags)?s.tags.slice(0,2):[]).map(tag=>'<span class="tag">'+esc(tag)+'</span>').join('')+'</div>';
+        return '<a class="card" href="'+esc(href)+'"><div class="cardtop"><span class="slug">'+esc(s.slug)+'</span><span class="status" data-tone="'+tone+'"><span class="dot" aria-hidden="true"></span>'+esc(labels[status]||status)+'</span></div><h3>'+esc(s.name||s.slug)+'</h3><p>'+esc(s.description||'尚未填写项目说明。')+'</p>'+tagHtml+'<div class="cardbottom"><span class="meta"><span class="origin">'+esc(s.sourceUrl||'原站地址待补充')+'</span>'+(s.updatedAt?'<span class="date">'+esc(s.updatedAt)+'</span>':'')+'</span><span class="arrow" aria-hidden="true">↗</span></div></a>';
       }).join('');
     }
     filters.addEventListener('click',e=>{

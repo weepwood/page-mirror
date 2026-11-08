@@ -7,7 +7,10 @@
   <meta name="theme-color" content="#101114">
   <meta name="description" content="Page Mirror 中不存在这个页面。">
   <title>页面未找到 — Page Mirror</title>
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <!-- GitHub Pages serves this file for ANY missing path. Relative URLs would resolve
+       against the requested path, so every internal link uses the absolute Pages
+       subpath. Keep it in sync with package.json "homepage" (checked by tests). -->
+  <link rel="icon" href="/page-mirror/favicon.svg" type="image/svg+xml">
   <style>
     :root{color-scheme:dark;--bg:#101114;--surface:#1c1f26;--line:#2a2d36;--text:#f2f4f7;--muted:#949aa8;--accent:#b9f36a}
     *{box-sizing:border-box}
@@ -33,8 +36,8 @@
     <p>地址可能已变更，或者你跟随的是某个镜像站点内部的原站路由。</p>
     <p class="note">镜像快照通常只收录原站首页；站内导航仍指向原站路径，在 GitHub Pages 子路径下无法解析。这类已知差异登记在 <code>docs/link-audit.md</code>。</p>
     <div class="actions">
-      <a class="primary" href="./">返回站点目录</a>
-      <a href="./#sites">跳到站点列表</a>
+      <a class="primary" href="/page-mirror/">返回站点目录</a>
+      <a href="/page-mirror/#sites">跳到站点列表</a>
     </div>
   </main>
 </body>

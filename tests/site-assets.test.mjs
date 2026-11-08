@@ -27,6 +27,10 @@ const files = {
   'verify.js': false,
   'discover.js': false,
   'capture.js': false,
+  'validate.mjs': false,
+  'validate.js': false,
+  'snapshot-status.json': false,
+  'validation.js': true,         // real site bundle, not a local helper
   '.env': false,
   '.npmrc': false,
   'credentials.json': false,
@@ -79,7 +83,8 @@ test('本地工具脚本规则不误伤站点资源', () => {
   for (const name of ['server.js', 'serve.mjs', 'shot2.js', 'verify.js']) {
     assert.match(name, LOCAL_TOOL_SCRIPT);
   }
-  for (const name of ['shots-xP4pPuRW.js', 'app.js', 'main.js']) {
+  for (const name of ['shots-xP4pPuRW.js', 'app.js', 'main.js', 'validation.js']) {
     assert.doesNotMatch(name, LOCAL_TOOL_SCRIPT);
   }
+  assert.match('validate.mjs', LOCAL_TOOL_SCRIPT);
 });

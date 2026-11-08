@@ -50,6 +50,7 @@ jobs:
       - name: Validate registry and run unit tests
         run: npm run validate && npm test
       - name: Commit migrated site sources
+        id: import
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -57,12 +58,15 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "导入公开镜像源码并更新统一站点目录"
             git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "No new mirrors to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # GITHUB_TOKEN 推送的提交不会自动触发 push 工作流；显式调度发布。
+      # GITHUB_TOKEN 推送的提交不会自动触发 push 工作流；仅在确有变更时调度发布。
       - name: Deploy updated mirror collection
+        if: steps.import.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run pages.yml --ref main

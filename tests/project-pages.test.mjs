@@ -30,7 +30,13 @@ test('首页保留发布与可访问性契约', () => {
 test('全局发布页面齐备且 URL 与 homepage 一致', () => {
   const notFound = read('404.html');
   assert.ok(notFound.includes('content="noindex"'), '404 页不应被索引');
-  assert.ok(notFound.includes('href="./"') && notFound.includes('favicon.svg'));
+  // GitHub Pages returns 404.html for ANY missing path, so relative URLs resolve
+  // against the requested path and break. All internal links must be absolute.
+  const base = new URL(homepage).pathname;
+  for (const href of [base + 'favicon.svg', 'href="' + base + '"', 'href="' + base + '#sites"']) {
+    assert.ok(notFound.includes(href), '404 页缺少绝对路径：' + href);
+  }
+  assert.ok(!/href="\.\//.test(notFound), '404 页不得使用相对路径');
   assert.ok(read('robots.txt').includes('Sitemap: ' + homepage + 'sitemap.xml'));
   const svg = read('favicon.svg');
   assert.ok(svg.includes('xmlns="http://www.w3.org/2000/svg"') && svg.includes('viewBox'));
@@ -91,4 +97,43 @@ test('链接扫描区分站内路由、缺失资源与内联脚本字符串', t 
   assert.equal(found.missingLocal.length, 0, '脚本内字符串不应算作缺失资源');
   const report = formatReport(result, { sites: [{ slug: 'demo', status: 'review' }] });
   assert.ok(report.includes('| `demo` | review |') && report.includes('## 逐站结果'));
+});
+
+test('sitemap 只收录产物中真实存在的站点', () => {
+  const registry = JSON.parse(read('sites/registry.json'));
+  const first = registry.sites[0];
+  const xml = buildSitemap(registry, homepage, new Set([first.slug]));
+  assert.equal((xml.match(/<url>/g) || []).length, 2, '根目录 + 1 个已构建站点');
+  assert.ok(xml.includes('<loc>' + homepage + first.previewPath + '</loc>'));
+  assert.equal((buildSitemap(registry, homepage, new Set()).match(/<url>/g) || []).length, 1);
+  const source = read('scripts/build-site.mjs');
+  assert.ok(source.includes('buildSitemap(registry, homepage, availableSlugs)'), '构建脚本必须按产物生成 sitemap');
+  assert.ok(source.indexOf('availableSlugs') > source.indexOf('for (const site of registry.sites)'), 'sitemap 必须在站点循环之后生成');
+});
+
+test('首页目录状态可分享且支持类型筛选', () => {
+  const html = read('index.html');
+  assert.ok(html.includes('id="kind"'), '缺少类型筛选控件');
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  for (const token of ['readUrlState', 'writeUrlState', 'URLSearchParams', 'validKind',
+    "p.set('q'", "p.set('status'", "p.set('kind'", "p.set('sort'", 'popstate', 'kindFilter']) {
+    assert.ok(script.includes(token), '首页脚本缺少 ' + token);
+  }
+  assert.doesNotThrow(() => new Function(script), '内联脚本必须可解析');
+});
+
+test('部署并发组隔离 PR，且采集链路显式调度发布', () => {
+  const pages = read('.github/workflows/pages.yml');
+  assert.match(pages, /group: pages-\$\{\{ github\.ref \}\}/, 'PR 不得与 main 共用并发组');
+  assert.match(pages, /cancel-in-progress: false/, '部署不得被中途取消');
+
+  for (const file of ['.github/workflows/capture-weread.yml', '.github/workflows/sync-mirrors.yml']) {
+    const workflow = read(file);
+    assert.ok(workflow.includes('changed=true') && workflow.includes('changed=false'), file + ' 缺少变更输出');
+    assert.match(workflow, /if: steps\.(?:snapshot|import)\.outputs\.changed == 'true'/, file + ' 必须仅在有变更时部署');
+    assert.ok(workflow.includes('gh workflow run pages.yml --ref main'), file + ' 缺少显式部署调度');
+  }
+  const capture = read('.github/workflows/capture-weread.yml');
+  assert.ok(capture.includes('actions: write'), '调度工作流需要 actions: write');
+  assert.ok(capture.includes('npm run validate && npm test'), '采集工作流应运行完整校验');
 });

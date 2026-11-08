@@ -71,8 +71,6 @@ for (const file of ['index.html', '404.html', 'robots.txt', 'favicon.svg']) {
   cpSync(resolve(root, file), join(out, file));
 }
 const homepage = resolveHomepage(root);
-const sitemap = buildSitemap(registry, homepage);
-writeFileSync(join(out, 'sitemap.xml'), sitemap);
 cpSync(registryPath, join(out, 'sites/registry.json'));
 writeFileSync(join(out, '.nojekyll'), '');
 
@@ -110,9 +108,16 @@ for (const site of registry.sites) {
   built++;
 }
 
+// Sitemap is written after the loop so it only advertises sites that really exist
+// in this build (a --only build intentionally keeps previously built sites).
+const availableSlugs = new Set(readdirSync(join(out, 'sites'), { withFileTypes: true })
+  .filter(ent => ent.isDirectory() && existsSync(join(out, 'sites', ent.name, 'index.html')))
+  .map(ent => ent.name));
+writeFileSync(join(out, 'sitemap.xml'), buildSitemap(registry, homepage, availableSlugs));
+
 const missing = only ? registry.sites.filter(site => !existsSync(join(out, 'sites', site.slug, 'index.html'))) : [];
 console.log(`部署目录已生成：${out}；本次构建 ${built}/${registry.sites.length} 个站点` + (only ? `（--only=${only.join(',')}）` : '（全量）'));
-console.log(`sitemap.xml：${registry.sites.length + 1} 个 URL（根目录 + ${registry.sites.length} 个站点），base=${homepage}`);
+console.log(`sitemap.xml：${availableSlugs.size + 1} 个 URL（根目录 + ${availableSlugs.size} 个已发布站点），base=${homepage}`);
 if (missing.length) {
   console.warn(`注意：另有 ${missing.length} 个站点未包含在当前产物中，部署前请运行不带 --only 的全量构建。`);
 }

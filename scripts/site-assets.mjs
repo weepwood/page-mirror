@@ -27,12 +27,12 @@ export function isSensitiveName(name) {
 }
 
 /** Local collection / dev-server helpers, never referenced by the mirrored pages. */
-export const LOCAL_TOOL_SCRIPT = /^(?:server|serve|shot\d*|verify|discover|check|crawl|download\w*|localize|fetch\w*|mirror|start|build|capture|probe)\.(?:js|mjs|cjs)$/i;
+export const LOCAL_TOOL_SCRIPT = /^(?:server|serve|shot\d*|verify|validate|discover|check|crawl|download\w*|localize|fetch\w*|mirror|start|build|capture|probe)\.(?:js|mjs|cjs)$/i;
 
 const INTERNAL_EXACT = new Set([
   'MIRROR-IMPORT.json', 'package.json', 'package-lock.json',
   'tsconfig.json', 'components.json', 'AGENTS.md', 'CLAUDE.md',
-  'netlify.toml', 'vercel.json', 'README.md',
+  'netlify.toml', 'vercel.json', 'README.md', 'snapshot-status.json',
 ]);
 
 const PUBLISH_EXT = /\.(?:html?|css|js|mjs|json|xml|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|eot|wasm|mp3|mp4|webm|glb|bin|txt|webmanifest|ogg|dds|srt|pdf)$/i;

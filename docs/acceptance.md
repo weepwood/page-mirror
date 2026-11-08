@@ -20,14 +20,16 @@ planned → building → review → completed
 
 ## 第 0 步 · 自动化基线
 
-    npm run check          # validate + test + build
-    npm run audit:links    # 生成 docs/link-audit.md
+    npm run check            # validate + test + build
+    npm run audit            # 生成 docs/link-audit.md 与 docs/external-assets.md
 
-`npm run audit:links` 扫描 `.site-build/`（实际发布产物），只诊断、不改写任何镜像 HTML。阅读 [链接健康报告](link-audit.md) 的逐站表格，记录该站点的：
+两个审计都扫描 `.site-build/`（实际发布产物），只诊断、不改写任何镜像 HTML。阅读 [链接健康报告](link-audit.md) 的逐站表格，记录该站点的：
 
 - 根绝对路径引用数与分类（站内路由 / 缺失资源 / 已适配）
 - 快照本身缺失的资源
 - 本地相对资源缺失（正常应为 0）
+
+再阅读 [第三方外链报告](external-assets.md)，记录该站点向哪些第三方域名发起请求、是否包含追踪类脚本或原站统计 ID。
 
 ## 第 1 步 · 线上可达性
 
@@ -49,6 +51,7 @@ planned → building → review → completed
 - 哪些原站路由未收录、点击后会离开或 404；
 - 哪些资源在上游快照里就缺失；
 - 字体、图片、商标与交互代码的授权状态。
+- 第三方外链（CDN 依赖、追踪脚本、原站统计 ID）及其隐私影响。
 
 这类差异不阻塞 `completed`，前提是首页与主要交互完整、范围写清楚、授权已核对。
 
@@ -57,7 +60,7 @@ planned → building → review → completed
 1. 更新站点 README：验收日期、视口、结论、已知差异与授权备注。
 2. 更新 `sites/registry.json` 的 `status` 与 `updatedAt`。
 3. 运行 `npm run check`，推送后确认 Pages 部署成功。
-4. 重新运行 `npm run audit:links`，提交更新后的 [链接健康报告](link-audit.md)。
+4. 重新运行 `npm run audit`，提交更新后的 [链接健康报告](link-audit.md) 与 [第三方外链报告](external-assets.md)。
 
 ## 验收记录模板
 
@@ -66,7 +69,7 @@ planned → building → review → completed
 
 - 日期：YYYY-MM-DD
 - 视口：1280×900 / 375×812
-- 自动化：npm run check 通过；链接报告该站 N 处根绝对引用（其中站内路由 X、缺失资源 Y）
+- 自动化：npm run check 通过；链接报告该站 N 处根绝对引用（其中站内路由 X、缺失资源 Y）；外链报告 M 处第三方请求（追踪 Z）
 - 人工对照：逐项结论（结构 / 样式 / 素材 / 交互 / 响应式 / 控制台）
 - 已知差异：未收录路由、上游缺失资源、动态内容
 - 授权：字体 / 图片 / 商标状态

@@ -20,15 +20,20 @@ export function resolveHomepage(root, pkg = JSON.parse(readFileSync(resolve(root
 /**
  * Build the Pages sitemap from the registry, not from a hand-maintained list.
  * The root entry uses the most recent registry updatedAt so the output is deterministic.
+ * `availableSlugs` limits entries to sites actually present in the build output,
+ * so a targeted `--only` build never advertises URLs that would 404 on Pages.
  */
-export function buildSitemap(registry, homepage) {
+export function buildSitemap(registry, homepage, availableSlugs = null) {
   if (!registry || !Array.isArray(registry.sites)) throw new Error('registry.sites 必须是数组');
-  const dates = registry.sites
+  const sites = availableSlugs
+    ? registry.sites.filter(site => availableSlugs.has(site.slug))
+    : registry.sites;
+  const dates = sites
     .map(site => site.updatedAt)
     .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date || ''))
     .sort();
   const entries = [{ loc: homepage, lastmod: dates.at(-1) }];
-  for (const site of registry.sites) {
+  for (const site of sites) {
     const path = site.previewPath || `sites/${site.slug}/`;
     entries.push({ loc: homepage + path, lastmod: site.updatedAt });
   }

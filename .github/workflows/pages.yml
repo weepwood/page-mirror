@@ -35,9 +35,12 @@ permissions:
   pages: write
   id-token: write
 
+# A PR must never cancel a deployment on main, and a deployment must never be
+# cancelled mid-flight (GitHub's Pages starter uses cancel-in-progress: false).
+# Grouping by ref keeps pull_request runs isolated from push/dispatch runs.
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   validate:

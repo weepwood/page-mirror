@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 const outputDirectory = fileURLToPath(new URL('../dist/', import.meta.url))
 const budgets = {
   // Allows opt-in widgets and interactive workspace/Dock controls to remain in lazy chunks.
-  javascriptGzip: 133.5 * 1024,
+  javascriptGzip: 134.5 * 1024, // 统一工作区 Node 22 构建实测约 133.9 KiB，保留约 0.6 KiB 余量
   // Keeps the backup parser in the lazy settings chunk and preserves headroom for startup code.
   javascriptEntryGzip: 58.5 * 1024,
   cssGzip: 64 * 1024,

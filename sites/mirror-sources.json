@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "slug": "mimo-rl",
+      "repository": "weepwood/mimo-mirror",
+      "branch": "main",
+      "kind": "static",
+      "name": "MiMo RL · 原站静态镜像",
+      "sourceUrl": "https://mimo.xiaomi.com/rl/",
+      "description": "MiMo RL 原站资源、图表和静态指标数据的完整快照；迁移后在统一仓库维护。"
+    },
+    {
+      "slug": "inftab-app",
+      "repository": "weepwood/inftab-mirror",
+      "branch": "main",
+      "kind": "vite",
+      "name": "Infinity New Tab · 交互版",
+      "sourceUrl": "https://inftab.com/",
+      "description": "基于 Vue 3 的可交互复刻版本，独立构建并在统一目录部署。"
+    }
+  ]
+}

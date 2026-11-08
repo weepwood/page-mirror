@@ -1,59 +1,47 @@
 # Page Mirror
 
-用于统一管理个人网站复刻项目的主仓库。每个镜像站点都是一个独立子项目，单独保存页面结构、样式、脚本、资源和复刻说明；主项目负责目录索引、项目规范、模板、校验和统一部署入口。
+个人网站镜像统一工作区。**每个镜像独立维护，一套目录与发布流水线统一管理。**
 
-> **复刻原则：以原网站为基准进行 1:1 还原，不是基于原网站重新设计一个相似的新网站。** 结构、排版、字体、颜色、图片、交互、滚动行为和响应式表现都应尽可能对齐原站。无法验证的细节要明确记录，不能用臆测代替核对。
+长期源仓库为 page-mirror，原有独立 *-mirror 仓库在迁移完成、审核与回归验收前继续保留。
 
-## 目标
+## 在线入口
 
-- **一个主仓库，多个独立镜像站点**：各站点放在 `sites/<slug>/`，避免不同项目的代码和资源互相污染。
-- **主页面是目录**：展示站点名称、原站地址、复刻状态、预览入口和项目说明。
-- **复刻过程可复用**：先研究原站，再逐屏还原，最后对照验收并部署。
-- **站点可独立检查**：每个子项目有自己的说明与验收记录；站点登记信息由统一清单维护。
-- **持续部署**：主站和所有登记的镜像站点通过 GitHub Pages 发布。
+https://weepwood.github.io/page-mirror/
 
-## 仓库结构
+## 核心结构
 
-```text
-page-mirror/
-├── index.html                 # 镜像站点总目录
-├── sites/
-│   ├── registry.json           # 所有镜像站点的元数据清单
-│   ├── _template/              # 新镜像站点的说明与验收模板
-│   └── <site-slug>/             # 每个站点独立的完整实现
-├── docs/
-│   ├── workflow.md             # 1:1 复刻工作流程
-│   └── site-guidelines.md      # 子项目结构与质量要求
-├── scripts/
-│   └── validate-registry.mjs   # 检查站点清单与目录一致性
-└── .github/workflows/
-    └── pages.yml               # GitHub Pages 部署
-```
+- sites/registry.json：站点展示目录及验收状态。
+- sites/mirror-sources.json：**公开**旧仓库的一次性迁移配置；未来可按需继续添加。
+- sites/<slug>/：独立镜像的源码、静态资源、字体与图片。
+- scripts/import-mirrors.mjs：克隆公开源仓库并复制完整代码、记录迁移 SHA。
+- scripts/build-site.mjs：按站点类型独立构建，输出 .site-build/。
+- .github/workflows/sync-mirrors.yml：首次同步及可选人工重新导入。
+- .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布。
 
-## 添加一个新镜像站点
+## 首批迁移
 
-1. 为站点选择唯一的英文短标识（`slug`），创建 `sites/<slug>/`。
-2. 先记录原站 URL、页面清单、视口尺寸、关键交互、资源来源及待确认项。
-3. 基于原站逐屏实现；保留独立的 HTML/CSS/JS 与资源，避免把不同站点耦合到主目录。
-4. 在 `sites/registry.json` 中登记站点，并维护状态、说明文档路径与预览路径。
-5. 本地对照原站检查桌面端、移动端、交互、控制台错误及网络资源。
-6. 运行 `node scripts/validate-registry.mjs`，通过后提交并部署。
-7. 对照线上地址再次验收。未验证的站点不要标记为“完成”。
+- mimo-mirror → sites/mimo-rl/（静态站点）
+- inftab-mirror → sites/inftab-app/（Vue 3 / Vite）
 
-详细流程见 [1:1 复刻工作流程](docs/workflow.md)。
+这两个源仓库目前公开。其余私有 *-mirror 项目暂不自动导入公开 page-mirror，避免在未经审核的情况下公开私有源码和媒体素材。原有 holo、artcraft-apps、inftab、weread 项目继续存在。
 
-## 目录索引约定
+## 添加新镜像
 
-每个站点使用独立子目录，部署后的预览地址形式为：
+    node scripts/add-mirror.mjs --slug=demo --repo=weepwood/demo-mirror --name=Demo --sourceUrl=https://example.com/
 
-`https://<owner>.github.io/<repository>/sites/<slug>/`
+普通静态网页无需改动中央部署流程；Vue/Vite 的镜像加上 --kind=vite。提交配置后 GitHub Actions 会完成首次导入，之后直接修改本仓库内 sites/<slug>/。若无需从其他仓库导入，可复制 sites/_template/ 并更新 registry.json。
 
-主目录通过 `sites/registry.json` 读取站点清单。新增或修改站点时，应同步维护清单与站点说明。
+## 开发与验证
 
-## 复刻范围与版权
+需要 Node.js 22+。源仓库导入需 Git；Vite 镜像构建需 npm。
 
-该仓库用于学习、研究和展示网页实现。原网站的名称、商标、文案、图片、字体及其他素材仍可能受其各自权利人的条款约束。复刻时优先遵守源站的使用条款与素材许可；不要将登录凭证、个人数据、密钥或其他受保护内容纳入仓库。对外发布前确认有权公开相关代码与素材。
+    node scripts/mirror-config.mjs
+    node scripts/validate-registry.mjs
+    node --test tests/*.test.mjs
+    node scripts/build-site.mjs
 
-## 当前状态
+详细安全边界、导入模式、私有镜像与发布验证参阅 [镜像迁移说明](docs/mirror-import.md)。完整设计对照与治理规范见 docs/。
 
-主仓库正在搭建基础设施。尚未登记已完成的镜像站点；只有完成实现、对照验收并成功部署后，才应在目录中标记为完成。
+## 验收与来源
+
+新导入镜像默认标记 review，必须自行确认静态资源、相对路径、交互、浏览器错误、移动端表现及相关授权后，才可标记 completed。镜像属于个人学习和研究，站点的第三方版权、商标和素材授权仍归原权利人。

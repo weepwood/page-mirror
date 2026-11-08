@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read
@@ -18,30 +19,44 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - name: Validate site registry
-        run: node scripts/validate-registry.mjs
+          node-version: '22'
+      - name: Validate import configuration and site registry
+        run: |
+          node scripts/mirror-config.mjs
+          node scripts/validate-registry.mjs
+          node --test tests/*.test.mjs
+      - name: Build independent sites
+        run: node scripts/build-site.mjs
+      - name: Upload site build artifact for deployment
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-mirror-build
+          path: .site-build/
+          include-hidden-files: true
+          retention-days: 1
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/checkout@v4
+      - name: Download site build artifact
+        uses: actions/download-artifact@v4
         with:
-          path: .
+          name: page-mirror-build
+          path: .site-build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .site-build
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

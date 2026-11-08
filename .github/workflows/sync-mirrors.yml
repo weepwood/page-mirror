@@ -1,0 +1,61 @@
+name: Import public mirror repositories
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sites/mirror-sources.json'
+      - 'scripts/import-mirrors.mjs'
+      - 'scripts/mirror-config.mjs'
+      - '.github/workflows/sync-mirrors.yml'
+  workflow_dispatch:
+    inputs:
+      refresh_slug:
+        description: '仅更新指定镜像 slug（留空为首次导入全部；更新会覆盖该子目录）'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-mirror-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate mirror sources
+        run: node scripts/mirror-config.mjs
+      - name: Import public source repositories
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MIRROR_REFRESH_SLUG: ${{ inputs.refresh_slug }}
+        run: |
+          if [ -n "$MIRROR_REFRESH_SLUG" ]; then
+            node scripts/import-mirrors.mjs --only="$MIRROR_REFRESH_SLUG" --refresh
+          else
+            node scripts/import-mirrors.mjs
+          fi
+      - name: Validate registry
+        run: node scripts/validate-registry.mjs
+      - name: Commit migrated site sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sites/
+          if ! git diff --cached --quiet; then
+            git commit -m "导入公开镜像源码并更新统一站点目录"
+            git push origin HEAD:main
+          else
+            echo "No new mirrors to commit."
+          fi

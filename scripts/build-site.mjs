@@ -1,22 +1,26 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { execFileSync, execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { loadSources, root } from './mirror-config.mjs';
+import { shouldPublish } from './site-assets.mjs';
 
 const out = resolve(root, '.site-build');
+const registryPath = resolve(root, 'sites/registry.json');
 const sources = new Map(loadSources().map(item => [item.slug, item]));
-const registry = JSON.parse(readFileSync(resolve(root, 'sites/registry.json'), 'utf8'));
+const registry = JSON.parse(readFileSync(registryPath, 'utf8'));
 
-function allowed(from, current) {
-  const rel = relative(from, current);
-  const parts = rel.split(sep);
-  if (parts.some(p => ['.git', '.github', 'node_modules', 'tests', 'scripts', 'reference', 'docs', 'coverage', 'dist'].includes(p))) return false;
-  if (parts.some(p => p.startsWith('.')) && rel !== '.') return false;
-  if (statSync(current).isDirectory()) return true;
-  return /\.(?:html?|css|js|mjs|json|xml|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|eot|wasm|mp3|mp4|webm|glb|bin|txt|webmanifest|map|ogg|dds|srt|pdf)$/i.test(current);
+const onlyArg = process.argv.slice(2).find(arg => arg.startsWith('--only='));
+const only = onlyArg ? onlyArg.slice('--only='.length).split(',').filter(Boolean) : null;
+if (only) {
+  if (!only.length) throw new Error('--only 需要至少一个站点 slug');
+  for (const slug of only) {
+    if (!registry.sites.some(site => site.slug === slug)) throw new Error('未知站点 slug：' + slug);
+  }
 }
+
 function copyStatic(source, dest) {
-  cpSync(source, dest, { recursive: true, filter: path => allowed(source, path) });
+  cpSync(source, dest, { recursive: true, filter: path => shouldPublish(source, path) });
 }
 // Windows resolves npm through npm.cmd, which execFileSync cannot spawn directly.
 function runNpm(args, cwd) {
@@ -57,19 +61,36 @@ function rewriteLocalAssetUrls(siteRoot) {
   visit(siteRoot);
 }
 
-rmSync(out, { recursive: true, force: true });
+// Full builds wipe the output; targeted builds keep the other sites intact.
+if (!only) rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, 'sites'), { recursive: true });
 cpSync(resolve(root, 'index.html'), join(out, 'index.html'));
-cpSync(resolve(root, 'sites/registry.json'), join(out, 'sites/registry.json'));
+cpSync(registryPath, join(out, 'sites/registry.json'));
 writeFileSync(join(out, '.nojekyll'), '');
 
+let built = 0;
 for (const site of registry.sites) {
+  if (only && !only.includes(site.slug)) continue;
   const path = resolve(root, 'sites', site.slug);
   if (!existsSync(path)) throw new Error('站点目录不存在：' + site.slug);
   const dest = join(out, 'sites', site.slug);
+  rmSync(dest, { recursive: true, force: true });
   const source = sources.get(site.slug);
   if (source?.kind === 'vite') {
-    runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], path);
+    // Skip a full reinstall when node_modules already matches the lockfile.
+    // CI runners always start clean, so they still run npm ci (served by the npm cache).
+    const lockPath = join(path, 'package-lock.json');
+    const stampPath = join(path, 'node_modules', '.page-mirror-lock');
+    const lockHash = existsSync(lockPath)
+      ? createHash('sha256').update(readFileSync(lockPath)).digest('hex')
+      : 'no-lock';
+    const installed = existsSync(join(path, 'node_modules')) && existsSync(stampPath) &&
+      readFileSync(stampPath, 'utf8') === lockHash;
+    if (!installed) {
+      runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], path);
+      mkdirSync(join(path, 'node_modules'), { recursive: true });
+      writeFileSync(stampPath, lockHash);
+    }
     runNpm(['run', 'build'], path);
     if (!existsSync(join(path, 'dist/index.html'))) throw new Error('Vite 产物缺少 index.html：' + site.slug);
     cpSync(join(path, 'dist'), dest, { recursive: true });
@@ -78,5 +99,11 @@ for (const site of registry.sites) {
     rewriteLocalAssetUrls(dest);
   }
   if (!existsSync(join(dest, 'index.html'))) throw new Error('站点缺少 index.html：' + site.slug);
+  built++;
 }
-console.log('部署目录已生成：' + out + '；站点数：' + registry.sites.length);
+
+const missing = only ? registry.sites.filter(site => !existsSync(join(out, 'sites', site.slug, 'index.html'))) : [];
+console.log(`部署目录已生成：${out}；本次构建 ${built}/${registry.sites.length} 个站点` + (only ? `（--only=${only.join(',')}）` : '（全量）'));
+if (missing.length) {
+  console.warn(`注意：另有 ${missing.length} 个站点未包含在当前产物中，部署前请运行不带 --only 的全量构建。`);
+}

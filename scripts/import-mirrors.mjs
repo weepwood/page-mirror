@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { basename, join, relative, resolve, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { loadSources, root } from './mirror-config.mjs';
+import { isSensitiveName, IMPORT_DENY_DIRS } from './site-assets.mjs';
 
 const args = process.argv.slice(2);
 const only = args.find(arg => arg.startsWith('--only='))?.slice('--only='.length);
@@ -27,13 +28,9 @@ function git(args, cwd) {
 function shouldCopy(sourceRoot, candidate) {
   const rel = relative(sourceRoot, candidate);
   const parts = rel.split(sep);
-  const excluded = new Set(['.git', '.github', 'node_modules', 'dist', '.cache', '.turbo', 'coverage', '__pycache__', '.venv']);
-  if (parts.some(part => excluded.has(part))) return false;
+  if (parts.some(part => IMPORT_DENY_DIRS.has(part))) return false;
   const name = basename(candidate);
-  if (name === '.gitignore' || name === '.DS_Store' || /^\.env(?:\.|$)/i.test(name) ||
-      /\.(?:pem|key|p12|pfx)$/i.test(name) || name === 'id_rsa') {
-    return false;
-  }
+  if (name === '.gitignore' || name === '.DS_Store' || isSensitiveName(name)) return false;
   const stat = lstatSync(candidate);
   if (stat.isSymbolicLink()) throw new Error('不允许链接文件：' + rel);
   return true;

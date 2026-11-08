@@ -39,16 +39,16 @@ page-mirror 是 **唯一长期维护的源仓库**。各站点隔离在 sites/<s
 
 默认 branch 为 main，可指定 --branch=master。提交 sites/mirror-sources.json，Action 会自动完成首次导入并更新站点目录。导入后日常改动直接在 page-mirror 的 sites/<slug>/ 中进行。新建而非迁移的站点，可使用 sites/_template 并手动登记 registry.json。
 
-本地运行：
+本地运行（统一命令见根 package.json）：
 
-    node scripts/mirror-config.mjs
-    node scripts/import-mirrors.mjs
-    node scripts/import-mirrors.mjs --only=mimo-rl --refresh
-    node scripts/validate-registry.mjs
-    node --test tests/*.test.mjs
-    node scripts/build-site.mjs
+    npm run validate
+    npm test
+    npm run build
+    npm run build -- --only=mimo-rl
+    npm run import:mirrors
+    npm run import:mirrors -- --only=mimo-rl --refresh
 
-本地导入需要 Git、Node.js 22+；Vite 站点构建另需 npm，执行 npm ci 和 npm run build。导入器会拒绝非公开源、跨仓库重复映射、符号链接、未受管目录覆盖，过滤 .git/.github/.env、私钥及 node_modules 等文件。
+本地导入需要 Git、Node.js 22+；Vite 站点构建另需 npm，执行 npm ci 和 npm run build。导入器会拒绝非公开源、跨仓库重复映射、符号链接与未受管目录覆盖；过滤 `.git`/`.github`/`node_modules`/`dist` 等目录，以及 `.env*`、`.npmrc`、`.pypirc`、`credentials.json`、`*.pem|key|p12|pfx|ppk` 与私钥等凭据文件（规则见 `scripts/site-assets.mjs`）。
 
 ## 发布与审核
 

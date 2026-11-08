@@ -1,13 +1,13 @@
 name: Import public mirror repositories
 
+# Only a manifest change starts an import. pages.yml ignores that same path and
+# is dispatched here afterwards, so one change deploys exactly once. Import/validation
+# script changes are covered by pages.yml's validate + test jobs instead.
 on:
   push:
     branches: [main]
     paths:
       - 'sites/mirror-sources.json'
-      - 'scripts/import-mirrors.mjs'
-      - 'scripts/mirror-config.mjs'
-      - '.github/workflows/sync-mirrors.yml'
   workflow_dispatch:
     inputs:
       refresh_slug:
@@ -35,8 +35,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate mirror sources
-        run: node scripts/mirror-config.mjs
+      - name: Validate mirror sources and site registry
+        run: npm run validate
       - name: Import public source repositories
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,8 +47,8 @@ jobs:
           else
             node scripts/import-mirrors.mjs
           fi
-      - name: Validate registry
-        run: node scripts/validate-registry.mjs
+      - name: Validate registry and run unit tests
+        run: npm run validate && npm test
       - name: Commit migrated site sources
         run: |
           git config user.name "github-actions[bot]"

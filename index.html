@@ -15,13 +15,18 @@
     .toplink{font-size:13px;color:var(--muted);text-decoration:none}.hero{padding:76px 0 44px;max-width:760px}.eyebrow{color:var(--accent);font-size:12px;font-weight:750;letter-spacing:.15em;text-transform:uppercase}
     h1{font-size:clamp(42px,7vw,76px);letter-spacing:-.075em;line-height:.99;margin:18px 0 22px;font-weight:760}.hero p{color:var(--muted);font-size:17px;max-width:620px;margin:0}
     .toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:30px 0 18px}.toolbar h2{font-size:19px;letter-spacing:-.04em;margin:0}.count{color:var(--muted);font-size:13px}
-    .search{width:min(310px,100%);padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#15161b;color:var(--text);font:inherit;outline:none}.search:focus{border-color:#8fb954}
+    .controls{display:flex;align-items:center;gap:10px}
+    .search{width:min(310px,100%);padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#15161b;color:var(--text);font-family:inherit;font-size:15px;outline:none}.search:focus{border-color:#8fb954}
+    .sortsel{padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#15161b;color:var(--text);font-family:inherit;font-size:13px;outline:none;cursor:pointer}.sortsel:focus{border-color:#8fb954}
+    .filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+    .chip{font-family:inherit;font-size:12px;line-height:1.4;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:#15161b;color:var(--muted);cursor:pointer;transition:border-color .18s,color .18s,background .18s,transform .18s}
+    .chip:hover{border-color:#626b55;color:var(--text);transform:translateY(-1px)}.chip.active{background:var(--accent);border-color:var(--accent);color:#111;font-weight:700}.chip .n{opacity:.65;margin-left:6px;font-variant-numeric:tabular-nums}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{display:flex;flex-direction:column;min-height:205px;padding:21px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#1b1d23,#15161b);text-decoration:none;transition:border-color .18s,transform .18s}.card:hover{border-color:#626b55;transform:translateY(-2px)}
     .cardtop{display:flex;align-items:center;justify-content:space-between;gap:10px}.slug{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted)}.status{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:#d3d6dc}.status.completed{border-color:#47662f;color:var(--accent)}.status.progress{border-color:#66583a;color:#f0c875}
     .card h3{font-size:23px;letter-spacing:-.045em;margin:24px 0 8px}.card p{margin:0;color:var(--muted);font-size:14px}.cardbottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:auto;padding-top:24px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}.arrow{color:var(--accent);font-size:18px}
     .empty{grid-column:1/-1;padding:40px 22px;text-align:center;border:1px dashed #3a3d46;border-radius:15px;color:var(--muted)}.empty strong{display:block;color:var(--text);font-size:17px;margin-bottom:7px}
     footer{margin-top:58px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:12px}
-    @media(max-width:650px){.wrap{padding:22px 16px 48px}.hero{padding:55px 0 30px}.toolbar{align-items:flex-start;flex-direction:column}.search{width:100%}.grid{grid-template-columns:1fr}.card{min-height:185px}footer{flex-direction:column}}
+    @media(max-width:650px){.wrap{padding:22px 16px 48px}.hero{padding:55px 0 30px}.toolbar{align-items:flex-start;flex-direction:column}.controls{width:100%;flex-wrap:wrap}.sortsel{flex:1 1 120px}.search{flex:1 1 100%;width:100%}.grid{grid-template-columns:1fr}.card{min-height:185px}footer{flex-direction:column}}
   </style>
 </head>
 <body>
@@ -29,7 +34,19 @@
     <header><a class="brand" href="./" style="text-decoration:none"><span class="mark">P</span><span>PAGE MIRROR</span></a><a class="toplink" href="https://github.com/weepwood/page-mirror">GitHub ↗</a></header>
     <section class="hero"><div class="eyebrow">Independent recreations · One index</div><h1>The web,<br>reconstructed.</h1><p>一个统一管理独立网站复刻项目的目录。每个站点单独实现、单独维护、单独验收；这里负责索引与展示。</p></section>
     <section>
-      <div class="toolbar"><div><h2>镜像站点</h2><div class="count" id="summary">正在读取站点清单…</div></div><input class="search" id="search" type="search" placeholder="搜索名称、域名或标识…" aria-label="搜索镜像站点"></div>
+      <div class="toolbar">
+        <div><h2>镜像站点</h2><div class="count" id="summary">正在读取站点清单…</div></div>
+        <div class="controls">
+          <select class="sortsel" id="sort" aria-label="排序方式">
+            <option value="slug">按标识</option>
+            <option value="name">按名称</option>
+            <option value="updated">按更新时间</option>
+            <option value="status">按状态</option>
+          </select>
+          <input class="search" id="search" type="search" placeholder="搜索名称、域名或标识…" aria-label="搜索镜像站点">
+        </div>
+      </div>
+      <div class="filters" id="filters"></div>
       <div class="grid" id="sites" aria-live="polite"><div class="empty">正在读取站点清单…</div></div>
     </section>
     <footer><span>PAGE MIRROR · 站点独立，目录统一</span><span>仅展示已登记项目；完成状态需经过对照验收。</span></footer>
@@ -38,22 +55,53 @@
     const list = document.querySelector('#sites');
     const summary = document.querySelector('#summary');
     const search = document.querySelector('#search');
+    const sort = document.querySelector('#sort');
+    const filters = document.querySelector('#filters');
     const labels = {planned:'计划中',building:'复刻中',review:'待验收',completed:'已验收',paused:'已暂停'};
-    let sites = [];
+    const statusOrder = ['building','review','completed','planned','paused'];
+    let sites = [], statusFilter = 'all', sortBy = 'slug';
     function esc(value=''){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function renderFilters(){
+      const counts = {};
+      for(const s of sites){const key=s.status||'planned';counts[key]=(counts[key]||0)+1;}
+      const items = [{key:'all',label:'全部',n:sites.length}];
+      for(const key of statusOrder) if(counts[key]) items.push({key,label:labels[key]||key,n:counts[key]});
+      filters.innerHTML = items.map(i => '<button type="button" class="chip'+(statusFilter===i.key?' active':'')+'" data-status="'+esc(i.key)+'">'+esc(i.label)+'<span class="n">'+i.n+'</span></button>').join('');
+      for(const btn of filters.querySelectorAll('.chip')){
+        btn.addEventListener('click',()=>{statusFilter=btn.dataset.status;render();});
+      }
+    }
+    function comparator(a,b){
+      if(sortBy==='name') return (a.name||a.slug).localeCompare(b.name||b.slug,'zh-Hans-CN')||a.slug.localeCompare(b.slug);
+      if(sortBy==='updated') return (b.updatedAt||'').localeCompare(a.updatedAt||'')||a.slug.localeCompare(b.slug);
+      if(sortBy==='status') return (statusOrder.indexOf(a.status)-statusOrder.indexOf(b.status))||a.slug.localeCompare(b.slug);
+      return a.slug.localeCompare(b.slug);
+    }
     function render(){
+      renderFilters();
       const q=search.value.trim().toLowerCase();
-      const shown=sites.filter(s=>[s.name,s.slug,s.description,s.sourceUrl].join(' ').toLowerCase().includes(q));
-      summary.textContent=sites.length?sites.length+' 个已登记站点 · '+sites.filter(s=>s.status==='completed').length+' 个已验收':'尚无登记站点';
-      if(!shown.length){list.innerHTML='<div class="empty"><strong>'+(sites.length?'没有找到匹配的站点':'镜像站点目录已就绪')+'</strong>'+(sites.length?'试试其他关键词。':'添加第一个站点后，它会显示在这里。子项目应放在 sites/&lt;slug&gt;/ 下，并登记到 registry.json。')+'</div>';return;}
+      const shown=sites
+        .filter(s=>[s.name,s.slug,s.description,s.sourceUrl].join(' ').toLowerCase().includes(q))
+        .filter(s=>statusFilter==='all'||(s.status||'planned')===statusFilter)
+        .sort(comparator);
+      const completed=sites.filter(s=>s.status==='completed').length;
+      const counter=shown.length===sites.length?sites.length+' 个站点':'显示 '+shown.length+' / '+sites.length+' 个站点';
+      summary.textContent=sites.length?counter+' · '+completed+' 个已验收':'尚无登记站点';
+      if(!shown.length){
+        const title=sites.length?'没有找到匹配的站点':'镜像站点目录已就绪';
+        const hint=sites.length?'试试其他关键词，或切换状态筛选。':'添加第一个站点后，它会显示在这里。子项目应放在 sites/&lt;slug&gt;/ 下，并登记到 registry.json。';
+        list.innerHTML='<div class="empty"><strong>'+title+'</strong>'+hint+'</div>';return;
+      }
       list.innerHTML=shown.map(s=>{
         const href=s.previewPath||('sites/'+encodeURIComponent(s.slug)+'/');
         const status=s.status||'planned';
-        return '<a class="card" href="'+esc(href)+'"><div class="cardtop"><span class="slug">'+esc(s.slug)+'</span><span class="status '+(status==='completed'?'completed':status==='building'?'progress':'')+'">'+esc(labels[status]||status)+'</span></div><h3>'+esc(s.name||s.slug)+'</h3><p>'+esc(s.description||'尚未填写项目说明。')+'</p><div class="cardbottom"><span>'+esc(s.sourceUrl||'原站地址待补充')+'</span><span class="arrow">↗</span></div></a>';
+        const meta=esc(s.sourceUrl||'原站地址待补充')+(s.updatedAt?' · '+esc(s.updatedAt):'');
+        return '<a class="card" href="'+esc(href)+'"><div class="cardtop"><span class="slug">'+esc(s.slug)+'</span><span class="status '+(status==='completed'?'completed':status==='building'?'progress':'')+'">'+esc(labels[status]||status)+'</span></div><h3>'+esc(s.name||s.slug)+'</h3><p>'+esc(s.description||'尚未填写项目说明。')+'</p><div class="cardbottom"><span>'+meta+'</span><span class="arrow">↗</span></div></a>';
       }).join('');
     }
     search.addEventListener('input',render);
-    fetch('./sites/registry.json').then(r=>{if(!r.ok)throw new Error('registry unavailable');return r.json()}).then(data=>{sites=Array.isArray(data.sites)?data.sites:[];render()}).catch(()=>{summary.textContent='无法加载站点清单';list.innerHTML='<div class="empty"><strong>站点清单读取失败</strong>请检查 sites/registry.json 是否存在且为有效 JSON。</div>';});
+    sort.addEventListener('change',()=>{sortBy=sort.value;render();});
+    fetch('./sites/registry.json').then(r=>{if(!r.ok)throw new Error('registry unavailable');return r.json()}).then(data=>{sites=Array.isArray(data.sites)?data.sites:[];render()}).catch(()=>{summary.textContent='无法加载站点清单';filters.innerHTML='';list.innerHTML='<div class="empty"><strong>站点清单读取失败</strong>请检查 sites/registry.json 是否存在且为有效 JSON。</div>';});
   </script>
 </body>
 </html>

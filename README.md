@@ -14,9 +14,13 @@ https://weepwood.github.io/page-mirror/
 - sites/mirror-sources.json：**公开**旧仓库的一次性迁移配置；未来可按需继续添加。
 - sites/<slug>/：独立镜像的源码、静态资源、字体与图片。
 - scripts/import-mirrors.mjs：克隆公开源仓库并复制完整代码、记录迁移 SHA。
-- scripts/build-site.mjs：按站点类型独立构建，输出 .site-build/。
+- scripts/build-site.mjs：按站点类型独立构建，输出 .site-build/；支持 `--only=<slug>` 只重建单个站点。
+- scripts/site-assets.mjs：发布过滤与敏感文件规则，供导入器和构建脚本共用。
+- scripts/registry-rules.mjs：站点清单校验的单一真源，供校验脚本与测试共用。
+- scripts/validate-registry.mjs：校验站点目录、路径、状态与导入记录一致性。
+- tests/：清单规则、发布过滤与迁移记录一致性测试。
 - .github/workflows/sync-mirrors.yml：首次同步及可选人工重新导入。
-- .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布。
+- .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布；其 push 路径与同步工作流互斥，避免同一提交重复部署。
 
 ## 首批迁移（自动导入，仅限公开源）
 
@@ -42,12 +46,15 @@ https://weepwood.github.io/page-mirror/
 
 ## 开发与验证
 
-需要 Node.js 22+。源仓库导入需 Git；Vite 镜像构建需 npm。
+需要 Node.js 22+。源仓库导入需 Git；Vite 镜像构建需 npm。统一入口在根 `package.json`：
 
-    node scripts/mirror-config.mjs
-    node scripts/validate-registry.mjs
-    node --test tests/*.test.mjs
-    node scripts/build-site.mjs
+    npm run validate                     # 镜像源配置 + 站点清单校验
+    npm test                             # 单元测试
+    npm run build                        # 全量构建 .site-build/
+    npm run build -- --only=feralui      # 仅重建单个站点，保留其余产物
+    npm run check                        # validate + test + build
+
+构建时只把浏览器资源复制进 `.site-build/`；规则集中在 `scripts/site-assets.mjs`：`MIRROR-IMPORT.json`、`package*.json`、本地服务/采集脚本（`server.js`、`shot*.js` 等）、凭据文件、sourcemap 与 `reference/` 源码都不会发布。
 
 详细安全边界、导入模式、私有镜像与发布验证参阅 [镜像迁移说明](docs/mirror-import.md)。完整设计对照与治理规范见 docs/。
 

@@ -64,3 +64,13 @@ sites/
 - 大型框架项目需要在 README 记录安装、开发、构建和部署命令。
 - 资源路径必须适配 GitHub Pages 的仓库子路径，不能默认部署在域名根目录。
 - 不提交 `.env`、访问令牌、Cookie、个人数据、`node_modules`、构建缓存或临时截图。
+
+## 发布范围
+
+`npm run build` 只把浏览器资源复制进 `.site-build/sites/<slug>/`，规则集中在 `scripts/site-assets.mjs`，并配有单元测试：
+
+- **排除目录**：`.git`、`.github`、`node_modules`、`tests`、`scripts`、`reference`、`docs`、`coverage`、`dist`、`out`、`.next`，以及所有点开头的路径。
+- **排除文件**：`MIRROR-IMPORT.json`、`package.json`、`package-lock.json`、`README.md`、`netlify.toml` 等工程文件；本地服务与采集脚本（`server.js`、`serve.mjs`、`shot*.js`、`verify.js`、`check.js` 等）；凭据与密钥（`.env*`、`.npmrc`、`.pypirc`、`credentials.json`、`*.pem|key|p12|pfx|ppk` 等）；sourcemap。
+- **保留**：HTML/CSS/JS、图片、字体、音视频、wasm/glb、JSON/XML 数据、webmanifest，以及 Next.js 静态导出所需的 `.txt` RSC 载荷。
+
+站点运行需要的静态数据（`feed.json`、`nav.json` 等）会被发布，因此不要把内部说明或密钥写进同名 JSON。带哈希的站点资源（如 `shots-xP4pPuRW.js`）不会被误判为本地脚本。

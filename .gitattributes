@@ -1,0 +1,23 @@
+# One canonical line ending for the whole repository. Windows checkouts keep LF
+# in the index, so editor/tool differences never show up as noisy whole-file diffs.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.glb binary
+*.bin binary
+*.dds binary
+*.pdf binary
+*.mp3 binary
+*.mp4 binary
+*.webm binary

@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { root } from './mirror-config.mjs';
+import { collectHtml, toPosix } from './scan-utils.mjs';
 
 const REPORT_PATH = resolve(root, 'docs/link-audit.md');
 const OWN_PREFIX = '/page-mirror/';
@@ -28,14 +29,6 @@ function cleanPath(value) {
   const raw = value.split(/[?#]/)[0];
   try { return decodeURIComponent(raw); } catch { return raw; }
 }
-function walk(dir, onFile) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const abs = join(dir, entry.name);
-    if (entry.isDirectory()) walk(abs, onFile);
-    else if (entry.isFile()) onFile(abs);
-  }
-}
-
 /** Classification of a root-absolute reference that survived the build rewrite. */
 export function classifyRef(slug, ref, buildRoot) {
   const clean = cleanPath(unescapeRef(ref));
@@ -71,7 +64,7 @@ export function scanBuild(buildRoot) {
     const dir = join(sitesRoot, slug);
     if (!statSync(dir).isDirectory()) continue;
     const htmlFiles = [];
-    walk(dir, file => { if (/\.html?$/i.test(file)) htmlFiles.push(file); });
+    collectHtml(dir, file => htmlFiles.push(file.abs));
     const counts = { own: 0, fixable: 0, 'missing-asset': 0, route: 0 };
     const examples = {};
     const missingLocal = new Set();
@@ -183,6 +176,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     writeFileSync(REPORT_PATH, formatReport(result, registry));
     console.log(`链接审计完成：${result.sites.length} 个站点 / ${result.htmlFiles} 个 HTML / ${result.rootRefs} 处根绝对路径`);
     console.log(`  站内路由 ${result.totals.route} · 缺失资源 ${result.totals['missing-asset']} · 已适配 ${result.totals.own} · 本地相对资源缺失 ${result.missingLocal}`);
-    console.log(`报告已写入：${relative(root, REPORT_PATH)}`);
+    console.log(`报告已写入：${toPosix(relative(root, REPORT_PATH))}`);
   }
 }

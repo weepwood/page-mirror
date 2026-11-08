@@ -11,6 +11,7 @@ on:
       - 'robots.txt'
       - 'favicon.svg'
       - 'package.json'
+      - '.node-version'
       - 'sites/**'
       - '!sites/mirror-sources.json'
       - 'scripts/**'
@@ -24,6 +25,7 @@ on:
       - 'robots.txt'
       - 'favicon.svg'
       - 'package.json'
+      - '.node-version'
       - 'sites/**'
       - '!sites/mirror-sources.json'
       - 'scripts/**'
@@ -44,15 +46,16 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version-file: '.node-version'
           cache: npm
-          cache-dependency-path: sites/inftab-app/package-lock.json
+          # Any present or future Vite mirror lockfile participates in the cache.
+          cache-dependency-path: sites/*/package-lock.json
       - name: Validate import configuration and site registry
         run: npm run validate
       - name: Unit tests
@@ -74,7 +77,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: validate
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

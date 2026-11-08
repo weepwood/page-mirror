@@ -17,17 +17,21 @@ https://weepwood.github.io/page-mirror/
 - scripts/build-site.mjs：按站点类型独立构建，输出 .site-build/；支持 `--only=<slug>` 只重建单个站点。
 - scripts/site-assets.mjs：发布过滤与敏感文件规则，供导入器和构建脚本共用。
 - scripts/registry-rules.mjs：站点清单校验的单一真源，供校验脚本与测试共用。
+- scripts/scan-utils.mjs：产物遍历、HTML 收集与体积格式的共享实现，供三份审计复用。
+- scripts/preview.mjs：本地模拟 GitHub Pages 子路径的零依赖预览服务（`npm run preview`）。
 - scripts/validate-registry.mjs：校验站点目录、路径、状态、分类与导入记录一致性。
 - scripts/audit-links.mjs：扫描发布产物的链接健康并生成报告（只诊断，不改镜像 HTML）。
 - scripts/audit-external.mjs：登记镜像 HTML 向第三方域名发起的请求（只诊断，不改镜像 HTML）。
 - scripts/audit-build.mjs：体检发布产物的体积、重复内容、发布卫生与 sitemap 一致性（只诊断，不改镜像 HTML）。
 - scripts/sitemap.mjs：从 registry 生成 sitemap.xml，仅收录产物中真实存在的站点，URL 基准取 package.json 的 `homepage`。
 - index.html / 404.html / robots.txt / favicon.svg：站点目录与全局发布页面。
+- .node-version / .editorconfig / .gitattributes：Node 版本、编辑器与换行规范的单一真源。
 - tests/：清单规则、发布过滤、首页与全局页面、sitemap 与链接扫描测试。
 - docs/link-audit.md：链接健康基线报告（自动生成，请勿手改）。
 - docs/external-assets.md：第三方外链资源清单（自动生成，请勿手改）。
 - docs/build-audit.md：发布产物体检报告（自动生成，请勿手改）。
 - docs/acceptance.md：站点验收 SOP 与状态流转规则。
+- docs/engineering.md：单一真源、命令矩阵、CI 触发与门禁分层约定。
 - .github/workflows/sync-mirrors.yml：首次同步及可选人工重新导入。
 - .github/workflows/pages.yml：自动检查和统一 GitHub Pages 发布；其 push 路径与同步工作流互斥，避免同一提交重复部署。
 
@@ -68,12 +72,14 @@ https://weepwood.github.io/page-mirror/
 
 ## 开发与验证
 
-需要 Node.js 22+。源仓库导入需 Git；Vite 镜像构建需 npm。统一入口在根 `package.json`：
+需要 Node.js 22+（版本以 `.node-version` 为准）。源仓库导入需 Git；Vite 镜像构建需 npm。统一入口在根 `package.json`：
 
     npm run validate                     # 镜像源配置 + 站点清单校验
     npm test                             # 单元测试
     npm run build                        # 全量构建 .site-build/
     npm run build -- --only=feralui      # 仅重建单个站点，保留其余产物
+    npm run preview                      # 本地模拟 Pages 子路径（默认 4173）
+    npm run preview -- --port=8080       # 指定端口
     npm run audit:links                  # 扫描产物链接健康并刷新 docs/link-audit.md
     npm run audit:external               # 登记第三方外链并刷新 docs/external-assets.md
     npm run audit:build                  # 体检产物并刷新 docs/build-audit.md
@@ -83,7 +89,9 @@ https://weepwood.github.io/page-mirror/
 
 构建时只把浏览器资源复制进 `.site-build/sites/<slug>/`，并在产物根目录发布 `404.html`、`robots.txt`、`favicon.svg` 与由 registry 生成的 `sitemap.xml`（全量构建 24 个 URL；`--only` 只列出产物中实际存在的站点）；规则集中在 `scripts/site-assets.mjs`：`MIRROR-IMPORT.json`、`package*.json`、`snapshot-status.json`、本地服务/采集/校验脚本（`server.js`、`shot*.js`、`validate.mjs` 等）、凭据文件、sourcemap 与 `reference/` 源码都不会发布。
 
-三个审计脚本不纳入 `npm run check`：它们会写入报告文件，适合验收前手动运行并提交结果；其中 `audit:build -- --check` 是只读门禁，已接入 CI 的构建后检查。
+三个审计脚本不纳入 `npm run check`：它们会写入报告文件，适合验收前手动运行并提交结果；其中 `audit:build -- --check` 是只读门禁，已接入 CI 的构建后检查。`npm run preview` 会把 `.site-build/` 挂到 `/page-mirror/` 子路径，缺失路径回退自定义 404，便于本地复现线上资源 URL 与 404 推荐。
+
+三个工作流固定 `ubuntu-24.04` runner，Node 版本统一读取 `.node-version`，避免平台镜像迁移导致构建不可复现。完整工程约定（单一真源、命令矩阵、CI 触发矩阵与门禁分层）见 [工程约定](docs/engineering.md)。
 
 首页的状态筛选、搜索、排序与类型筛选都会写入 URL 查询参数，可直接分享或刷新恢复：离散筛选会 push 一条浏览器历史（后退可还原），连续输入则合并为一次 URL 写入；按 `/` 聚焦搜索、`Esc` 清空搜索或全部筛选。命中未收录的站内路由时，[404 页](404.html) 会根据请求路径从 `registry.json` 推测对应镜像，并给出直达该站首页的建议链接；脚本不可用时静态入口仍然可用。
 

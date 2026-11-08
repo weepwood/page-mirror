@@ -1,8 +1,12 @@
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { root } from './mirror-config.mjs';
+import { formatBytes, toPosix, walkFiles } from './scan-utils.mjs';
+
+// Kept as a public export so existing callers keep importing it from here.
+export { formatBytes };
 
 const REPORT_PATH = resolve(root, 'docs/build-audit.md');
 const DUP_MIN_BYTES = 4096;          // tiny files are not worth hashing
@@ -26,12 +30,6 @@ const FORBIDDEN_EXACT = new Set([
 ]);
 const FORBIDDEN_EXT = /\.(?:map|env|pem|key|p12|pfx|log|md|tsx?|jsx|py|sh|bat|ps1)$/i;
 
-export function formatBytes(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
-}
-
 /** Why a published path is a hygiene violation, or null when it is legitimate. */
 export function hygieneIssue(rel) {
   const parts = rel.split('/');
@@ -43,16 +41,6 @@ export function hygieneIssue(rel) {
   if (FORBIDDEN_EXACT.has(name)) return '内部文件 ' + name;
   if (FORBIDDEN_EXT.test(name)) return '不应发布的文件类型 ' + name;
   return null;
-}
-
-function collect(dir, base, out) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const abs = join(dir, entry.name);
-    if (entry.isSymbolicLink()) continue;
-    if (entry.isDirectory()) { collect(abs, base, out); continue; }
-    if (!entry.isFile()) continue;
-    out.push({ path: relative(base, abs).split(sep).join('/'), abs, size: statSync(abs).size });
-  }
 }
 
 function siteOf(rel) {
@@ -70,7 +58,7 @@ export function scanBuildAssets(buildRoot, options = {}) {
   }
   const maxBytes = (options.maxMb ?? DEFAULT_MAX_MB) * 1024 * 1024;
   const files = [];
-  collect(buildRoot, buildRoot, files);
+  walkFiles(buildRoot, file => files.push({ path: file.rel, abs: file.abs, size: file.size }));
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
   const errors = [];
   const warnings = [];
@@ -283,6 +271,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     mkdirSync(dirname(REPORT_PATH), { recursive: true });
     writeFileSync(REPORT_PATH, formatBuildAudit(result));
     console.log(`产物体检完成：${result.totals.files} 个文件 / ${formatBytes(result.totals.bytes)} / ${result.totals.sites} 个站点；错误 ${result.errors.length}，提示 ${result.warnings.length}`);
-    console.log(`  重复内容 ${result.totals.duplicateGroups} 组 / ${formatBytes(result.totals.duplicateBytes)}；报告已写入：${relative(root, REPORT_PATH).split(sep).join('/')}`);
+    console.log(`  重复内容 ${result.totals.duplicateGroups} 组 / ${formatBytes(result.totals.duplicateBytes)}；报告已写入：${toPosix(relative(root, REPORT_PATH))}`);
   }
 }

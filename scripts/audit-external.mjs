@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { root } from './mirror-config.mjs';
+import { collectHtml, toPosix } from './scan-utils.mjs';
 
 const REPORT_PATH = resolve(root, 'docs/external-assets.md');
 
@@ -33,14 +34,6 @@ export function classifyExternal(url) {
   return TRACKER_HOST.test(url) ? 'tracker' : 'cdn';
 }
 
-function collectHtml(dir, visit) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) collectHtml(path, visit);
-    else if (entry.isFile() && /\.html?$/i.test(entry.name)) visit(path);
-  }
-}
-
 /**
  * Inventory every request a published mirror page makes to a third-party host.
  * Only tag attributes and inline script literals are inspected; the mirrored
@@ -66,7 +59,7 @@ export function scanExternal(buildRoot) {
     };
     collectHtml(dir, file => {
       htmlFiles++;
-      const text = readFileSync(file, 'utf8');
+      const text = readFileSync(file.abs, 'utf8');
       for (const tag of text.matchAll(SCRIPT_TAG)) add(attr(tag[0], 'src'), 'script');
       for (const tag of text.matchAll(LINK_TAG)) {
         const rel = attr(tag[0], 'rel');
@@ -160,6 +153,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     writeFileSync(REPORT_PATH, formatExternalReport(result));
     const t = result.totals;
     console.log(`外链审计完成：${result.sites.length} 个站点 / ${t.htmlFiles} 个 HTML / ${t.externalRefs} 处外部引用（追踪 ${t.trackerRefs}、CDN ${t.cdnRefs}）`);
-    console.log(`  涉及 ${t.hosts} 个域名，${t.analyticsIds} 个原站统计 ID；报告已写入：${relative(root, REPORT_PATH)}`);
+    console.log(`  涉及 ${t.hosts} 个域名，${t.analyticsIds} 个原站统计 ID；报告已写入：${toPosix(relative(root, REPORT_PATH))}`);
   }
 }

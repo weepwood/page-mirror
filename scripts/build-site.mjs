@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { loadSources, root } from './mirror-config.mjs';
 import { shouldPublish } from './site-assets.mjs';
 import { buildSitemap, resolveHomepage } from './sitemap.mjs';
+import { rewriteInlineStyleAssetUrls } from './rewrite-inline-assets.mjs';
 
 const out = resolve(root, '.site-build');
 const registryPath = resolve(root, 'sites/registry.json');
@@ -48,6 +49,8 @@ function rewriteLocalAssetUrls(siteRoot) {
           const dest = (prefix ? prefix + '/' : './') + path + extra;
           return attr + '=' + q + dest + q;
         });
+        // 仅改写 CSS 中实际存在的本地资源，不改内联 JS、导航 URL 或数据 URI。
+        output = rewriteInlineStyleAssetUrls(output, siteRoot, abs);
       } else {
         output = output.replace(/url\(\s*(["']?)\/(?!\/)([^)'"]+)\1\s*\)/gi, (all, q, path) => {
           if (!existsSync(join(siteRoot, path))) return all;

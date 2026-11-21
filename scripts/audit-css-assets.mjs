@@ -81,17 +81,17 @@ export function formatCssReport(result) {
   const lines=[
     '# 镜像 CSS 资源健康报告','',
     '> 从实际发布产物中扫描 CSS 文件、HTML 内联 style 与 style 属性，不修改镜像。','',
-    \`扫描 \${t.sites} 个站点 / \${t.scannedFiles} 个文件，CSS URL \${t.references} 条。根路径可修复 \${t.rootFixable}，缺失相对资源 \${t.missingRelative}，缺失根路径资源 \${t.missingRoot}。\`,'',
+    `扫描 ${t.sites} 个站点 / ${t.scannedFiles} 个文件，CSS URL ${t.references} 条。根路径可修复 ${t.rootFixable}，缺失相对资源 ${t.missingRelative}，缺失根路径资源 ${t.missingRoot}。`,'',
     '| 站点 | 可修复根路径 | 缺失相对资源 | 缺失根路径资源 |','| --- | ---: | ---: | ---: |'
   ];
   for (const site of result.sites) {
     const count=category=>site.problems.filter(p=>p.category===category).length;
-    lines.push(\`| \\\`\${site.slug}\\\` | \${count('root-fixable')} | \${count('relative-missing')} | \${count('root-missing')} |\`);
+    lines.push(`| \`${site.slug}\` | ${count('root-fixable')} | ${count('relative-missing')} | ${count('root-missing')} |`);
   }
   lines.push('','## 问题示例','');
   for (const site of result.sites.filter(s=>s.problems.length)) {
-    lines.push(\`### \${site.slug}\`,'');
-    for(const item of site.problems.slice(0,10))lines.push(\`- \${item.category}: \\\`\${item.url}\\\` — \\\`\${item.file}\\\`\`);
+    lines.push(`### ${site.slug}`,'');
+    for(const item of site.problems.slice(0,10))lines.push(`- ${item.category}: \`${item.url}\` — \`${item.file}\``);
     lines.push('');
   }
   lines.push('动态脚本生成的 URL、HTTP 资源状态、浏览器 CSP/CORS 与 iframe 行为不在此静态报告覆盖范围。','');
@@ -102,7 +102,7 @@ if (process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)
   const report=scanCssAssets(resolve(root,'.site-build'));
   if (process.argv.includes('--json'))console.log(JSON.stringify(report,null,2));
   else if (process.argv.includes('--check')) {
-    console.log(\`CSS 资源：\${report.totals.references} 处引用，\${report.totals.rootFixable} 处可修复根路径，\${report.totals.missingRelative} 处缺失相对资源\`);
+    console.log(`CSS 资源：${report.totals.references} 处引用，${report.totals.rootFixable} 处可修复根路径，${report.totals.missingRelative} 处缺失相对资源`);
     // Existing third-party snapshots can be incomplete. Fail only on path
     // mistakes we can deterministically fix from files present in the build.
     if (report.totals.rootFixable)process.exitCode=1;
